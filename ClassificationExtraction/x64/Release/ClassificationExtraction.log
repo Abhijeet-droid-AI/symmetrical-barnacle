@@ -1,0 +1,25 @@
+﻿  M_Logger.cpp
+  Source.cpp
+D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail'
+  (compiling source file 'Source.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\xstring(522,7):
+      see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Header.hxx(109,9): warning C4005: 'ITK': macro redefinition
+  (compiling source file 'Source.cpp')
+      D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\standard_defines.hpp(98,9):
+      see previous definition of 'ITK'
+  
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Header.hxx(146,111): warning C4042: 'vecClassifiedObjs': has bad storage class
+  (compiling source file 'Source.cpp')
+  
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Source.cpp(54,111): warning C4042: 'vecClassifiedObjs': has bad storage class
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Source.cpp(337,19): warning C4129: 'W': unrecognized character escape sequence
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Source.cpp(354,19): warning C4129: 'W': unrecognized character escape sequence
+     Creating library D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationExtraction.lib and object D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationExtraction.exp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 751 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+itk_main.obj : warning LNK4099: PDB '' was not found with 'itk_main.obj' or at ''; linking object as if no debug info
+  ClassificationExtraction.vcxproj -> D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationExtraction.exe
