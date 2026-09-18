@@ -1,0 +1,25 @@
+﻿  Harman_Classification_Validation.cpp
+D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail'
+  (compiling source file 'Harman_Classification_Validation.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\xstring(522,7):
+      see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(203,6): warning C4102: 'std': unreferenced label
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(174,12): warning C4101: 'isClassified1': unreferenced local variable
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(155,8): warning C4101: 'nRevs': unreferenced local variable
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(254,13): warning C4101: 'count': unreferenced local variable
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(529,17): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationValidation\Harman_Classification_Validation.cpp(823,8): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  M_Logger.cpp
+D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail'
+  (compiling source file 'M_Logger.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\xstring(522,7):
+      see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+  
+     Creating library D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationValidation.lib and object D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationValidation.exp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 844 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+itk_main.obj : warning LNK4099: PDB '' was not found with 'itk_main.obj' or at ''; linking object as if no debug info
+  ClassificationValidation.vcxproj -> D:\ITK_customization\ClassificationUtilitiesTC2312\x64\Release\ClassificationValidation.exe
