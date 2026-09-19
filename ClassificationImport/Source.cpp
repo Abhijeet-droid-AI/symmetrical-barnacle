@@ -1,47 +1,165 @@
 #include "Header.hpp"
+#include "ConfigParser.hpp"
+#include "InputLoader.hpp"
+
+// =============================================================================
+//  ClassificationImport  (config-driven)
+//  -----------------------------------------------------------------------------
+//  Classifies Teamcenter objects into the ICS classes named in the input and
+//  sets the classification attributes. The input arrives through the ingestion
+//  layer (InputLoader: CSV / DB / CSV_DB) configured in the master config file
+//  (Config\classification_utilities.cfg).
+//
+//      ClassificationImport.exe [-config=<cfg file>] [-h]
+//                               [-u=<user> -p=<pwd> -g=<group>]   (optional overrides)
+//                               [-f=<input file> -log=<dir>]      (legacy overrides)
+//
+//  The classification ITK logic (ICS_* / ITEM_* / GRM_* / PREF_* calls and the
+//  already-classified vs. new-classification branches) is UNCHANGED from the
+//  previous version - only where the input rows and the settings come from
+//  has changed.
+// =============================================================================
 
 void displayUsage(void);
-//map <int, std::map <std::string, std::string>> Read_input_file(char *fileName);
-map <int, std::map <std::string, std::string>> Read_input_file_1(char* fileName);
 int checkObjectValidityForClassification(string ObjType, bool& isValidForClassification);
-//int getObject(const char *item_id, const char *suffix, const char *ObjType, tag_t *tObj);
-int setClassAttributes(map <std::string, std::string> objData, tag_t tClass, tag_t tClassificationObj,string& FailedAttributes);
+int setClassAttributes(map <std::string, std::string> objData, tag_t tClass, tag_t tClassificationObj, string& FailedAttributes);
 int getObject(const char* itemId, const char* pObjType, tag_t* tObj);
 tag_t getItemOrRevToValidate(tag_t tObj, string ObjRevId);
 int updateClassAttributes(const char* clsAttributeName, const char* clsAttributeValue, int& FailedAttrCount, string& FailedAttributes, tag_t tClassificationObj);
 stringstream ss;
 
-int ITK_user_main(int argc, char *argv[])
+/* Exit codes
+   0 : finished (check the logs for per-object results)
+   1 : usage / argument problem
+   2 : configuration file could not be loaded
+   3 : input ingestion failed (no objects could be loaded)
+   4 : Teamcenter login failed
+*/
+#define EXIT_OK                0
+#define EXIT_USAGE             1
+#define EXIT_CONFIG            2
+#define EXIT_INGEST            3
+#define EXIT_LOGIN             4
+
+int ITK_user_main(int argc, char* argv[])
 {
 	int iStatus = ITK_ok;
 	int iUnUsed = 0;
-	
-	map <int, std::map <std::string, std::string>> ObjectsMap;	
 
-	const char* userid = ITK_ask_cli_argument("-u=");
-	const char* password = ITK_ask_cli_argument("-p=");
-	const char* group = ITK_ask_cli_argument("-g=");
-	char* file = ITK_ask_cli_argument("-f=");
-	char* Logfile = ITK_ask_cli_argument("-log=");
+	string sConfigFile;
+	string sUserId, sPwd, sGroup;
+	string sLogFileDir;
+	string sLegacyInputFile;
 
-	if (userid == NULL || password == NULL || group == NULL || file == NULL  || Logfile == NULL)
+	/* ------------------------------------------------------------------
+	   1. arguments : -config= + optional legacy overrides + -h
+	   ------------------------------------------------------------------ */
+	if( argc > 1 && argv[ 1 ] != NULL &&
+		( strncmp( argv[ 1 ], "-h", 2 ) == 0 || strncmp( argv[ 1 ], "-H", 2 ) == 0 ||
+		  strncmp( argv[ 1 ], "/h", 2 ) == 0 || strncmp( argv[ 1 ], "--help", 6 ) == 0 ) )
 	{
 		displayUsage();
-		iStatus = !ITK_ok;
-		return iStatus;
-
+		return EXIT_USAGE;
 	}
-	//read the csv file
-	
-	//ObjectsMap = Read_input_file(file);
-	/******Modification by suwarna start*****/
 
-	ObjectsMap = Read_input_file_1(file);
-	/******Modification by suwarna end*****/
-	//ITK auto login
+	for( int i = 1; i < argc; i++ )
+	{
+		if( argv[ i ] == NULL )
+		{
+			continue;
+		}
+		if( strncmp( argv[ i ], "-config=", 8 ) == 0 )
+		{
+			sConfigFile.assign( argv[ i ] + 8 );
+		}
+		else if( strncmp( argv[ i ], "-u=", 3 ) == 0 )
+		{
+			sUserId.assign( argv[ i ] + 3 );
+		}
+		else if( strncmp( argv[ i ], "-p=", 3 ) == 0 )
+		{
+			sPwd.assign( argv[ i ] + 3 );
+		}
+		else if( strncmp( argv[ i ], "-g=", 3 ) == 0 )
+		{
+			sGroup.assign( argv[ i ] + 3 );
+		}
+		else if( strncmp( argv[ i ], "-f=", 3 ) == 0 )
+		{
+			sLegacyInputFile.assign( argv[ i ] + 3 );
+		}
+		else if( strncmp( argv[ i ], "-log=", 5 ) == 0 )
+		{
+			sLogFileDir.assign( argv[ i ] + 5 );
+		}
+	}
+
+	/* ------------------------------------------------------------------
+	   2. configuration
+	   ------------------------------------------------------------------ */
+	ConfigParser oCfg;
+	if( !oCfg.load( sConfigFile ) )
+	{
+		std::cout << "ERROR: could not load configuration file" << std::endl;
+		displayUsage();
+		return EXIT_CONFIG;
+	}
+
+	RowIngestionSettings_t oIngest;
+	oIngest.inputMode       = oCfg.getString( "IMPORT", "INPUT_MODE", "CSV" );
+	oIngest.csvFile         = oCfg.getString( "IMPORT", "CSV_FILE", "" );
+	oIngest.csvDelimiter    = oCfg.getString( "IMPORT", "CSV_DELIMITER", "~##" );
+	oIngest.csvHasHeader    = oCfg.getBool( "IMPORT", "CSV_HAS_HEADER", true );
+	oIngest.csvFallbackToCsv= oCfg.getBool( "IMPORT", "CSV_DB_FALLBACK_TO_CSV", true );
+	oIngest.dbConnStr       = oCfg.getString( "IMPORT", "DB_CONN_STR", "" );
+	oIngest.dbQuery         = oCfg.getString( "IMPORT", "DB_QUERY", "" );
+	oIngest.csvDbQuery      = oCfg.getString( "IMPORT", "CSV_DB_QUERY", "" );
+
+	/* credentials + logging : config first, CLI overrides win */
+	if( sUserId.empty() )  sUserId = oCfg.getString( "CREDENTIALS", "TC_USER", "" );
+	if( sPwd.empty() )     sPwd    = oCfg.getString( "CREDENTIALS", "TC_PASS", "" );
+	if( sGroup.empty() )   sGroup  = oCfg.getString( "CREDENTIALS", "TC_GROUP", "" );
+	if( sLogFileDir.empty() ) sLogFileDir = oCfg.getString( "LOGS", "LOG_DIR", ".\\Logs\\" );
+
+	/* legacy override of the CSV file still supported */
+	if( !sLegacyInputFile.empty() )
+	{
+		oIngest.csvFile = sLegacyInputFile;
+	}
+
+	if( sUserId.empty() || sPwd.empty() || sGroup.empty() )
+	{
+		std::cout << "ERROR: Teamcenter credentials missing (set [CREDENTIALS] in the config file)" << std::endl;
+		displayUsage();
+		return EXIT_USAGE;
+	}
+
+	/* ------------------------------------------------------------------
+	   3. ingest the objects BEFORE login (same order as the previous
+	      version : Read_input_file_1 ran before ITK_init_module)
+	   ------------------------------------------------------------------ */
+	map <int, std::map <std::string, std::string>> ObjectsMap;
+
+	if( !InputLoader::load( oIngest, ObjectsMap ) )
+	{
+		std::cout << "ERROR: input ingestion failed, see log for details" << std::endl;
+		return EXIT_INGEST;
+	}
+	std::cout << "Ingestion completed: " << ObjectsMap.size() << " object(s) loaded" << std::endl;
+
+	/* ------------------------------------------------------------------
+	   4. Teamcenter session (unchanged)
+	   ------------------------------------------------------------------ */
+	const char* userid   = sUserId.c_str();
+	const char* password = sPwd.c_str();
+	const char* group    = sGroup.c_str();
+
 	ITK(ITK_initialize_text_services(iUnUsed));
 	iStatus = ITK_init_module(userid, password, group);
- 	logger = M_Logger(Logfile);
+	logger = M_Logger(sLogFileDir);
+	logger.init(sLogFileDir,
+			oCfg.getString("LOGS", "LOG_PREFIX_OK", "SuccessEPM_"),
+			oCfg.getString("LOGS", "LOG_PREFIX_FAIL", "FailEPM_"));
 	logger.writebothlog("Start of Classification Utility");
 	if (iStatus == ITK_ok)
 	{
@@ -77,17 +195,28 @@ int ITK_user_main(int argc, char *argv[])
 
 			auto pt0 = t.second.find(ITEM_ID);
 
-			ObjId.assign(pt0->second);
-
 			auto pt1 = t.second.find(ITEM_REV_ID);
-
-			rev_id.assign(pt1->second);
 
 			auto pt2 = t.second.find(OBJECT_TYPE);
 
-			ObjType.assign(pt2->second);
-
 			auto pt3 = t.second.find(CLASS_ID);
+
+			/* FIX: guard against rows that miss one of the mandatory columns
+			   (previously a missing column dereferenced end() and crashed) */
+			if (pt0 == t.second.end() || pt1 == t.second.end() ||
+				pt2 == t.second.end() || pt3 == t.second.end())
+			{
+				ss << "ERROR: mandatory column missing (item_id/item_revision_id/object_type/class_id) - object skipped";
+				logger.writefaillog(ss.str());
+				ss.str("");
+				continue;
+			}
+
+			ObjId.assign(pt0->second);
+
+			rev_id.assign(pt1->second);
+
+			ObjType.assign(pt2->second);
 
 			classId.assign(pt3->second);
 
@@ -255,103 +384,10 @@ int ITK_user_main(int argc, char *argv[])
 							}
 
 						}
-								
-						
-					}
 
-					/*ITK(ICS_find_class(classId.c_str(), &tClasss));
-					//ITK(ICS_ask_classification_object(tLatestRev, &tclassificationObject));
-					//ITK(ICS_ask_class_of_classification_obj(tclassificationObject, &tclassifiedclass));
-					//ITK(ICS_ask_classification_object_id(tclassificationObject, &classid));
-					//ITK(ICS_ico_ask_classified_object(tClasss, &tclassification_object_tags));
-
-					/*if (tClasss != NULLTAG && tclassifiedclass != tClasss)
-					{
-
-						ITK(ICS_create_classification_object(tLatestRev, ObjId.c_str(), tClasss, &tClassificationObj1));
-
-						if (tClassificationObj1 != NULLTAG)
-						{
-							ITK(ICS_classify_wsobject(tLatestRev, tClassificationObj1));
-
-						}
-						else
-						{
-							ss << "ERROR: Class-> " << classId.c_str() << " error in classification object creation " << iStatus << endl;
-							logger.writefaillog(ss.str());
-							ss.str("");
-
-						}
-
-						ITK(ICS_is_wsobject_classified(tLatestRev, &isClassified1));
-
-						if (isClassified1 == TRUE)
-						{
-							ss<<"Object classification is completed successfully for object -> " << pt0->second << endl;
-							logger.write(ss.str());
-							ss.str("");
-							string FailedAttributes;
-
-							int cnt = setClassAttributes(t.second, tClass, tClassificationObj1, FailedAttributes);
-
-							if (cnt == 0)
-							{
-								ss <<"SUCCESS: Object classification with all attributes is completed successfully for object -> " << pt0->second << endl;
-								logger.write(ss.str());
-								ss.str("");
-							}
-							else
-							{
-								ss <<"ERROR: Object classification is Failed for object -> " << pt0->second << " " << " for -> " << FailedAttributes << " attributes." << endl;
-								logger.writefaillog(ss.str());
-								ss.str("");
-							}
-
-							//logger.write("-----------------------------------------------------------------------------------------------------------------------");
-
-						}
-						else
-						{
-							ss <<"ERROR : Object classification is Failed for object -> " << pt0->second << " " << iStatus << endl;
-							logger.writefaillog(ss.str());
-							ss.str("");
-						}
-
-						//logger.write("-----------------------------------------------------------------------------------------------------------------------");
-					}*/
-					/*else if (tClasss != NULLTAG && tclassifiedclass == tClasss)
-					{
-						ICS_ask_classification_object(tLatestRev, &tClassifiedObject);
-						string FailedAttributes;
-
-						int cnt = setClassAttributes(t.second, tClasss, tClassifiedObject, FailedAttributes);
-
-						if (cnt == 0)
-						{
-							ss <<"SUCCESS: Object classification with all attributes is completed successfully for object -> " << pt0->second << endl;
-							logger.write(ss.str());
-							ss.str("");
-						}
-						else
-						{
-							ss <<"ERROR: Object classification is Failed for object -> " << pt0->second << " " << " for -> " << FailedAttributes << " attributes." << endl;
-							logger.writefaillog(ss.str());
-							ss.str("");
-						}
-
-						//logger.write("-----------------------------------------------------------------------------------------------------------------------");
 
 
 					}
-					else
-					{
-						ss <<"ERROR: Class-> " << classId.c_str() << " is not available in Teamcenter,skipping Object classification " << iStatus << endl;
-						logger.writefaillog(ss.str());
-						ss.str("");
-
-					}
-					/******Modification by suwarna end
-				}*/
 					else
 					{
 						logger.write("INFO: Object is not classified, Starting Object classification");
@@ -451,16 +487,16 @@ int ITK_user_main(int argc, char *argv[])
 				logger.writebothlog("Teamcenter session is closed.");
 
 		}
-		
-	}
-	
-	else
-	{		
-		logger.writebothlog("Login to Teamcenter Failed..");
-	}
-		
 
-	return iStatus;
+	}
+
+	else
+	{
+		logger.writebothlog("Login to Teamcenter Failed..");
+		return EXIT_LOGIN;
+	}
+
+	return EXIT_OK;
 }
 
 void displayUsage(void)
@@ -470,7 +506,12 @@ void displayUsage(void)
 
 	std::cout << "\n Usage : " << endl;
 
-	std::cout << "xxxxxx" << "  -u=<userid> -p=<passwd> -g=<group> -f=<input file> -log=<log file> "<<"\t [-h | help] Displays this usage information"<< endl<<endl;
+	std::cout << "ClassificationImport.exe  [-config=<configuration file>] [-u=<userid> -p=<passwd> -g=<group>]" << endl;
+	std::cout << "                          [-f=<input file>] [-log=<log directory>]" << endl;
+	std::cout << "                          [-h | help]  Displays this usage information" << endl << endl;
+	std::cout << " Without arguments the utility reads Config\\classification_utilities.cfg" << endl;
+	std::cout << " (auto-discovered two levels up from the exe, or next to the exe)." << endl;
+	std::cout << " The input mode (CSV / DB / CSV_DB) is taken from the [IMPORT] section." << endl;
 
 	std::cout << "\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 }
@@ -482,7 +523,7 @@ int checkObjectValidityForClassification(string ObjType, bool &isValidForClassif
 	scoped_smptr <char*> prefValues;
 
 	ITK(PREF_ask_char_values(PREF_ICS_CLASSIFIABLE_TYPES, &valCount , &prefValues));
-	
+
 	if ( valCount > 0)
 	{
 		for (int xx = 0; xx < valCount; xx++)
@@ -528,7 +569,7 @@ int setClassAttributes(map <std::string, std::string> objData, tag_t tclass, tag
 	ITK(ICS_ask_cid_sid_of_classification_obj(tClassificationObj, &classID, &viewID));
 
 	const char 	theClassId = NULL;
-	int  	theCount = 0;
+	int  		theCount = 0;
 	int* theIds = 0;
 	char** theNames = NULL;
 	char** theShortNames = NULL;
@@ -555,7 +596,7 @@ int setClassAttributes(map <std::string, std::string> objData, tag_t tclass, tag
 		//cout << "the attribute at ii is:" << theNames[ii] << endl;
 		auto att = objData.find(theNames[ii]);
 
-		
+
 		if (att == objData.end())
 		{
 			//cout << "element Could not found" << endl;
@@ -663,7 +704,7 @@ int setClassAttributes(map <std::string, std::string> objData, tag_t tclass, tag
 			else
 			{
 				std::cout << "array size not matching" << endl;
-			}	
+			}
 			const char* cAttrName;
 
 			cAttrName = const_cast<const char*>(clsAttributeName.c_str());
@@ -692,8 +733,8 @@ int setClassAttributes(map <std::string, std::string> objData, tag_t tclass, tag
 				FailedAttributes.append(cAttrName);
 			}
 		}
-		
-		
+
+
 	}
 
 	return FailedAttrCount;
@@ -737,384 +778,6 @@ int updateClassAttributes(const char* clsAttributeName, const char* clsAttribute
 
 }
 
-//int getObject(const char *item_id, const char *suffix, const char *ObjType, tag_t *tObj)
-//{
-//
-//	//std::std::cout << "Start of find_obj_rev" << endl;
-//	int nObjs = 0;
-//	int iStatus = ITK_ok;
-//	scoped_smptr <tag_t> tObjs;
-//	char* cObjType;
-//	
-//	const char
-//
-//		*names[3] = { ITEM_ID , OBJECT_SUFFIX , OBJECT_TYPE },
-//		*values[3] = { item_id , suffix , ObjType };
-//
-//
-//	//ITK(ITEM_find_item_revs_by_key_attributes(2, names, values, item_rev_id, &n, &revs));
-//
-//	ITK(ITEM_find_items_by_key_attributes(3, names, values, &nObjs, &tObjs));
-//
-//	if (nObjs > 0)
-//	{
-//		*tObj = tObjs[0];
-//	}
-//
-//	//std::std::cout << "End of find_obj_rev" << endl;
-//
-//	return 0;
-//
-//}
-
-int getObject(const char *itemId, const char *pObjType, tag_t *tObj)
-{
-
-	//std::std::cout << "Start of find_obj_rev" << endl;
-	int nObjs = 0;
-	int iStatus = ITK_ok;
-	tag_t * tObjs = NULL;
-	char * cObjType = NULL;
-
-	const char
-
-		*names[2] = { ITEM_ID , OBJECT_TYPE },
-		*values[2] = { itemId , pObjType };
-		/**names[3] = { ITEM_ID , OBJECT_SUFFIX,OBJECT_TYPE },
-		*values[3] = { itemId , suffix,pObjType };*/
-
-	/*if (tc_strcmp(pObjType, M4M_PART_TYPE) == 0 || tc_strcmp(pObjType, M4M_STUDY_TYPE) == 0 || tc_strcmp(pObjType, M4M_CUSTOMER_TYPE) == 0 || tc_strcmp(pObjType, M4M_COMMERCIAL_TYPE) == 0 || tc_strcmp(pObjType, M4M_DRAWING_TYPE) == 0)
-	{
-		ITK(ITEM_find_items_by_key_attributes(2, names, values, &nObjs, &tObjs));
-	}
-	else
-	{*/
-		ITK(ITEM_find_items_by_key_attributes(2, names, values, &nObjs, &tObjs));
-	//}
-
-	//logfile << "nObjs -> " << nObjs << " found in Teamcenter" << endl;
-
-	if (nObjs > 0)
-	{
-		for (int ss = 0; ss < nObjs; ss++)
-		{
-			//logfile << "Object -> " << itemId << " found in Teamcenter" << endl;
-
-			ITK(AOM_ask_value_string(tObjs[ss], OBJECT_TYPE, &cObjType));
-
-			//logfile << "Teamcenter Primary object type is ->  "<< cObjType << endl;
-
-			if (tc_strcmp(pObjType, cObjType) == 0)
-			{
-				*tObj = tObjs[ss];
-
-			}
-		}
-	}
-	/*else
-	{
-		ss << "ERROR:Object -> " << itemId << " not found in Teamcenter" << endl;
-		logger.writefaillog(ss.str());
-		ss.str();
-	}*/
-
-	return 0;
-
-}
-
-std::vector<std::string_view> split(std::string_view buffer, const std::string_view delimiter) {
-	std::vector<std::string_view> result;
-	std::string_view::size_type pos;
-
-	while ((pos = buffer.find(delimiter)) != std::string_view::npos) {
-		auto match = buffer.substr(0, pos);
-		/*if (!match.empty()) {
-			result.push_back(match);
-		}*/
-		
-			result.push_back(match);
-		
-		buffer.remove_prefix(pos + delimiter.size());
-	}
-
-	/*if (!buffer.empty()) {
-		result.push_back(buffer);
-	}*/
-	
-		result.push_back(buffer);
-	
-
-	return result;
-}
-/* map <int, std::map <std::string, std::string>> Read_input_file_1(char* fileName)
-{
-	ifstream MyFile;
-	map <int, std::map <std::string, std::string>> ObjectsMap;
-
-	MyFile.open(fileName, ios::in);
-	if (!MyFile.is_open())
-	{
-		std::std::cout << "Failed to open the file" << endl;
-		//sWrite << "Failed to open the file" << endl;
-		//loggers.writefaillog(sWrite.str());
-		//sWrite.str("");
-	}
-	else
-	{
-		std::std::cout << "File opened successfully" << endl;
-		//sWrite << "File opened successfully" << endl;
-		//loggers.write(sWrite.str());
-		//sWrite.str("");
-
-		int count = 0;
-
-		string line;
-
-		map< int, string> HeadersMap;
-
-		vector <std::map<std::string, std::string>> Objects;
-
-		while (getline(MyFile, line, '\n'))
-		{
-			count++;
-			int AttrCount = 0;
-			string linevec;
-
-			vector <string> vec;
-			std::map <std::string, std::string> PropMap;
-
-			istringstream ss(line);
-			//std::cout << "ss::" << ss.str() << endl;
-			while (getline(ss, linevec, '~##'))
-			{
-				AttrCount++;
-
-				if (count == 1)
-				{
-					HeadersMap.insert(std::pair< int, string>(AttrCount, linevec));
-				}
-				else
-				{
-					if (!linevec.empty())
-					{
-						auto it3 = HeadersMap.find(AttrCount);
-
-						PropMap.insert(std::pair<string, string>(it3->second, linevec));
-					}
-
-				}
-			}
-			if (count > 1)
-			{
-				map<string, string>::iterator it;
-
-				for (it = PropMap.begin(); it != PropMap.end(); it++)
-				{
-					if (it->first.find("@") != std::string::npos) {
-						string s = it->first;
-						//std::cout << "s::"<< it->first << endl;
-						std::string delimiter = "@";
-						size_t pos = 0;
-						std::string token;
-						while ((pos = s.find(delimiter)) != std::string::npos) {
-							token = s.substr(0, pos);
-							//std::std::cout << token << "::" << it->second << std::endl;
-							PropMap.insert(std::pair<string, string>(token, it->second));
-							s.erase(0, pos + delimiter.length());
-
-						}
-						if (!s.empty())
-						{
-							//std::cout << s <<"::" << it->second << endl;
-							PropMap.insert(std::pair<string, string>(s, it->second));
-						}
-
-					}
-				}
-
-			}
-
-
-			if (count > 1)
-			{
-				/*map<string, string>::iterator it;
-				std::cout <<"---------------------------------------------------" << endl;
-				for (it = PropMap.begin(); it != PropMap.end(); it++)
-				{
-					std::cout << it->first << "::" << it->second << endl;
-				}
-				std::cout << "---------------------------------------------------" << endl;
-				ObjectsMap.insert(std::pair<int, std::map <std::string, std::string>>(count, PropMap));
-			}
-
-		}
-
-		for (auto& t : ObjectsMap)
-		{
-			for (auto& s : t.second)
-			{
-			}
-			//std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-		}
-		MyFile.close();
-	}
-	return ObjectsMap;
-}
-*/
-
-map <int, std::map <std::string, std::string>> Read_input_file_1(char* fileName)
-{
-	
-	ifstream MyFile;
-	map <int, std::map <std::string, std::string>> ObjectsMap;
-
-	MyFile.open(fileName, ios::in);
-	if (!MyFile.is_open())
-	{
-		std::cout << "Failed to open the Input file" << endl;		
-		//logfile << "Failed to open the Input file" << endl;
-	
-	}
-	else
-	{
-		std::cout << "Input File opened successfully" << endl;
-		//logfile << "Input File opened successfully" << endl;		
-		
-
-		int count = 0;
-
-		string line;
-
-		map< int, string> HeadersMap;
-
-		vector <std::map<std::string, std::string>> Objects;
-
-		while (getline(MyFile, line, '\n'))
-		{
-			count++;
-			int AttrCount = 0;
-			string linevec;
-
-			vector <string> vec;
-			std::map <std::string, std::string> PropMap;
-			vector <std::string> items;
-			auto split_values = split(line, "~##");
-			for (size_t i = 0; i < split_values.size(); ++i)
-			{
-				AttrCount++;
-
-				if (count == 1)
-				{
-					HeadersMap.insert(std::pair< int, string>(AttrCount, split_values[i]));
-				}
-				else
-				{
-					auto it3 = HeadersMap.find(AttrCount);
-
-					PropMap.insert(std::pair<string, string>(it3->second, split_values[i]));
-
-				}
-			}
-
-			if (count > 1)
-			{
-				ObjectsMap.insert(std::pair<int, std::map <std::string, std::string>>(count, PropMap));
-			}
-
-		}
-	}
-
-	return ObjectsMap;
-}
-//
-//map <int, std::map <std::string, std::string>> Read_input_file(char *fileName)
-//{
-//	ifstream MyFile;
-//	map <int, std::map <std::string, std::string>> ObjectsMap;
-//
-//	MyFile.open(fileName, ios::in);
-//	if (!MyFile.is_open())
-//	{
-//		std::std::cout << "Failed to open the file" << endl;
-//	}
-//	else
-//	{
-//		std::std::cout << "File opened successfully" << endl;
-//
-//		int count = 0;
-//
-//		string line;
-//
-//		map< int, string> HeadersMap;
-//
-//		vector <std::map<std::string, std::string>> Objects;
-//
-//		while (getline(MyFile, line, '\n'))
-//		{
-//			//std::std::cout << "Line is --" << line << endl;
-//
-//			count++;
-//			int AttrCount = 0;
-//			string linevec;
-//
-//			vector <string> vec;
-//			std::map <std::string, std::string> PropMap;
-//
-//			istringstream ss(line);
-//
-//			while (getline(ss, linevec, '$'))
-//			{
-//				AttrCount++;
-//
-//				//std::std::cout << "AttrCount --" << AttrCount << endl;
-//
-//				if (count == 1)
-//				{
-//					//std::std::cout << "Capture the Headers " << endl;
-//
-//					HeadersMap.insert(std::pair< int, string>(AttrCount, linevec));
-//				}
-//				else
-//				{
-//					auto it3 = HeadersMap.find(AttrCount);
-//
-//					//std::std::cout << "Attribute Value is " << linevec << endl;
-//
-//					//std::std::cout << "Attribute Header is " << it3->second << endl;
-//
-//					PropMap.insert(std::pair<string, string>(it3->second, linevec));
-//
-//				}
-//			}
-//
-//			if (count > 1)
-//			{
-//				ObjectsMap.insert(std::pair<int, std::map <std::string, std::string>>(count, PropMap));
-//			}
-//
-//		}
-//
-//		for (auto& t : ObjectsMap)
-//		{
-//			//std::cout << "Final prop map" << t.first << endl;
-//			//std::cout << "Final prop map" << t.second << endl;
-//
-//			//std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-//
-//			for (auto& s : t.second)
-//			{
-//				//std::cout << "Final prop map --" << s.first << endl;
-//				//std::cout << "Final prop map --" << s.second << endl;
-//
-//			}
-//			//std::cout << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-//		}
-//
-//		///std::std::cout << "Number of lines" << endl << count << endl;
-//	}
-//	return ObjectsMap;
-//}
-
 tag_t getItemOrRevToValidate(tag_t tObj, string ObjRevId)
 {
 	scoped_smptr<char> rev_id;
@@ -1137,11 +800,11 @@ tag_t getItemOrRevToValidate(tag_t tObj, string ObjRevId)
 	}
 	else if (tc_strcasecmp(ObjRevId.c_str(), "last") == 0)
 	{
-		ITK(ITEM_ask_latest_rev(tObj, &obj_rev));		
+		ITK(ITEM_ask_latest_rev(tObj, &obj_rev));
 	}
 	else
 	{
-		ITK(ITEM_find_revision(tObj, ObjRevId.c_str(), &obj_rev));		
+		ITK(ITEM_find_revision(tObj, ObjRevId.c_str(), &obj_rev));
 	}
 	iStatus=ITEM_ask_rev_id2(obj_rev, &rev_id);
 	if (iStatus != ITK_ok)
@@ -1149,14 +812,14 @@ tag_t getItemOrRevToValidate(tag_t tObj, string ObjRevId)
 		ss << "ERROR: Revision is not available in Teamcenter,skipping Object classification " << endl;
 		logger.writefaillog(ss.str());
 		ss.str("");
-		//std::cout << "Revision not available in Teamcenter"<< endl;		
+		//std::cout << "Revision not available in Teamcenter"<< endl;
 	}
 	else
 	{
 		std::cout << "Processing object ::" << item_id.getString() << "\\" << rev_id.get() << endl;
 	}
-	
-	
+
+
 	/*sWrite << "INFO: Object latest revision is " << rev_id.getString() << endl;
 	loggers.write(sWrite.str());
 	sWrite.str("");*/

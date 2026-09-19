@@ -94,23 +94,18 @@
 
 using namespace std;
 
-#define ITK(x)																												 \
-{																															 \
-    if ( (status = (x)) != ITK_ok )																							 \
-    {																														 \
-            char *error_str = NULL;																							 \
-            EMH_ask_error_text ( status, &error_str );																		 \
-            TC_write_syslog ( "ERROR: %d, ERROR MSG: %s. at Line: %d in File: %s\n", status, error_str, __LINE__, __FILE__ );\
-            MEM_free ( error_str );																							 \
-    }																														 \
-}
+/*
+  NOTE : the ITK(x) macro used to be defined here as well, which clashed with
+  the definition in Header.hpp (C4005 redefinition warning, and the two
+  versions used different status variable names). It now lives ONLY in
+  Header.hpp so every translation unit behaves identically.
+*/
 
-#define SAFE_MEM_FREE( a )  \
-if ( a != NULL )		\
-{                       \
-    MEM_free( a );		\
-	a = NULL;			\
-}
+/*
+  FIX: SAFE_MEM_FREE used to be defined here AND in Header.hpp (C4005
+  redefinition warning, different macro bodies depending on include order).
+  It now lives ONLY in Header.hpp.
+*/
 
 #define SAFE_MEM_FREE_ARRAY(p, count) {		\
    if ( p != NULL ) {						\

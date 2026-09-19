@@ -55,6 +55,13 @@ public:
 	*/
 	DLLAPI M_Logger(string inLogDirectory);
 
+	/*
+	  init : (re)opens the log files. Called by the constructor and callable
+	         again after the config file has been read. Log file name prefixes
+	         are configurable ([LOGS] LOG_PREFIX_*).
+	*/
+	DLLAPI void init(string inLogDirectory, string inLogPrefixOk, string inLogPrefixFail);
+
 	/**
    * @brief   write :Write line to file
    * @param   inInputLine [I] input line to write

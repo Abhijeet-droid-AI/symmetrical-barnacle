@@ -1,5 +1,10 @@
-#ifndef STANDARD_DEFINES_H
-#define STANDARD_DEFINES_H
+/*
+  FIX: this header used the same include guard (STANDARD_DEFINES_H) as
+  standard_defines.hpp, so whichever was included first silently swallowed
+  the other one. It now has its own unique guard.
+*/
+#ifndef CLASSIFICATION_IMPORT_HEADER_H
+#define CLASSIFICATION_IMPORT_HEADER_H
 
 //C C++ standard
 #include<iostream>
@@ -100,4 +105,4 @@ while ( 0 )																																														\
 
 
 
-#endif
+#endif // CLASSIFICATION_IMPORT_HEADER_H
