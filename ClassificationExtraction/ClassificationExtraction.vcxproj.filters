@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -9,9 +9,8 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="Ingestion">
+      <UniqueIdentifier>{7a4c9b1e-1111-4a4a-9d9d-1a2b3c4d5e6f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -24,13 +23,31 @@
     <ClInclude Include="standard_defines.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ConfigParser.hpp">
+      <Filter>Ingestion</Filter>
+    </ClInclude>
+    <ClInclude Include="DBConnector.hpp">
+      <Filter>Ingestion</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLoader.hpp">
+      <Filter>Ingestion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="M_Logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M_Logger.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="ConfigParser.cpp">
+      <Filter>Ingestion</Filter>
+    </ClCompile>
+    <ClCompile Include="DBConnector.cpp">
+      <Filter>Ingestion</Filter>
+    </ClCompile>
+    <ClCompile Include="InputLoader.cpp">
+      <Filter>Ingestion</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

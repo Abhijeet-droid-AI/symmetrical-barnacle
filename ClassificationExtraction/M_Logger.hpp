@@ -47,13 +47,15 @@ public:
 
 	/**
 	* @brief   M_Logger : Constructor.
-	* @param   logDirectory [I] Log directgory where log will be generated.
+	* @param   inLogDirectory [I] Log directory where log will be generated.
+	* @param   inLogPrefixOk [I] File name prefix of the success log.
+	* @param   inLogPrefixFail [I] File name prefix of the failure log.
 	* @return  void.
 
 	* @par Note
 	*
 	*/
-	DLLAPI M_Logger(string inLogDirectory);
+	DLLAPI M_Logger(string inLogDirectory, string inLogPrefixOk, string inLogPrefixFail);
 
 	/**
    * @brief   write :Write line to file
@@ -63,6 +65,8 @@ public:
    * @par Note
    *
    */
+
+	DLLAPI void init(string inLogDirectory, string inLogPrefixOk, string inLogPrefixFail);
 
 	DLLAPI void write(string inInputLine);
 

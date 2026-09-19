@@ -41,10 +41,7 @@
 #include<utility>
 #include <regex>
 #include<list>
-#include <iostream>
 #include <stdexcept>
-#include <stdio.h>
-#include <string>
 
 // Windows Standard
 #include <tchar.h>
@@ -104,47 +101,61 @@
 using namespace std;
 #include<base_utils\ScopedSmPtr.hxx>
 #include <base_utils/IFail.hxx>
-#include "M_Logger.hpp" 
+#include "M_Logger.hpp"
 
-#define ITK(x)																													\
-{																																\
-    if ( (iStatus = (x)) != ITK_ok )																							\
-    {																															\
-            char *error_str = NULL;																								\
-            EMH_ask_error_text ( iStatus, &error_str );																			\
-            TC_write_syslog ( "ERROR: %d, ERROR MSG: %s. at Line: %d in File: %s\n", iStatus, error_str, __LINE__, __FILE__ );	\
-            logger.write("ERROR: " + to_string(iStatus) + ", ERROR MSG:" + error_str + ". at Line: " + to_string(__LINE__) + " in File: " + __FILE__);\
-            MEM_free ( error_str );																								\
-    }																															\
-}	
+// -----------------------------------------------------------------------------
+//  FIX : the ITK macro is now defined ONLY here (standard_defines.hpp no longer
+//  redefines it - that caused a C4005 redefinition warning and the wrong
+//  variable name depending on include order).
+// -----------------------------------------------------------------------------
+#define ITK(x)																																				\
+{																																							\
+    if ( (iStatus = (x)) != ITK_ok )																														\
+    {																																						\
+            char *error_str = NULL;																															\
+            EMH_ask_error_text ( iStatus, &error_str );																										\
+            TC_write_syslog ( "ERROR: %d, ERROR MSG: %s. at Line: %d in File: %s\n", iStatus, error_str, __LINE__, __FILE__ );								\
+            logger.write("ERROR: " + to_string(iStatus) + ", ERROR MSG:" + ( error_str ? error_str : "" ) + ". at Line: " + to_string(__LINE__) + " in File: " + __FILE__);	\
+            MEM_free ( error_str );																															\
+    }																																						\
+}
 
 typedef struct classifiedObjs_s {
     tag_t item_tag;
     tag_t rev_tag;
     string item_id;
     string item_rev_id;
- 
+
     logical isItemClassified;
     logical isItemRevClassified;
 } classifiedObjs_t;
 
+// -----------------------------------------------------------------------------
+//  FIX : theAttributeValues is now a std::string instead of a raw char*.
+//  The old code stored a pointer into TC shared memory and freed that memory
+//  right after (SAFE_SM_FREE) - the value was a dangling pointer by the time
+//  writeIntoFile() used it.
+// -----------------------------------------------------------------------------
 typedef struct icoAttrvalues_s {
-    int theAttributeValCounts;
-    char* theAttributeValues;
-    int attrId;
-    
+    int    theAttributeValCounts;
+    string theAttributeValue;
+    int    attrId;
+
 } icoAttrValues_t;
 
-set <string> setAttributeNames;
-set <string> setAttributevalues;
+// -----------------------------------------------------------------------------
+//  FIX : these were DEFINITIONS in the header; now declarations only.
+//  They are defined once in Source.cpp.
+// -----------------------------------------------------------------------------
+extern set <string> setAttributeNames;
+extern set <string> setAttributevalues;
 
 void displayUsage(void);
-static void find_item(char* item_id, tag_t* item);
-static int find_rev(char* item_id, char* rev_id, tag_t* rev);
-vector <classifiedObjs_t> readInputFile(char* cpInputFile);
+void find_item(char* item_id, tag_t* item);
+int  find_rev(char* item_id, char* rev_id, tag_t* rev);
 logical isObjectSubType(tag_t object, string parentType);
-map<tag_t, map<string, icoAttrValues_t>> getAllClassificationAttributeValues(static vector <classifiedObjs_t> vecClassifiedObjs);
+map<tag_t, map<string, icoAttrValues_t>> getAllClassificationAttributeValues(const vector <classifiedObjs_t>& vecClassifiedObjs);
 void getClassificationAttributeValues(tag_t objectTag, map<tag_t, map<string, icoAttrValues_t>>& mapClassifiedObjects, string  ItemId, string  RevId = "");
-void writeIntoFile(map<tag_t, map<string, icoAttrValues_t>> mapClassifiedObjects, char* cpOutputFile);
+bool writeIntoFile(map<tag_t, map<string, icoAttrValues_t>> mapClassifiedObjects, const string& sOutputFile);
 
 #endif // CLASSIFICATION_EXPORT_HXX

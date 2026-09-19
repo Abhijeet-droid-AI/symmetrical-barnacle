@@ -29,30 +29,40 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <!--
+    ============================================================================
+    SINGLE-SOURCE TC PATHS :
+    Build_Extraction.bat / Run_Extraction.bat read TC_ROOT from
+    Config\classification_utilities.cfg and generate Config\TC_Root.props.
+    When this file exists it defines $(TC_ROOT) - no Teamcenter path is
+    hardcoded in the project file anymore. If it does not exist, set the
+    TC_ROOT environment variable before starting Visual Studio.
+    ============================================================================
+  -->
+  <Import Project="$(SolutionDir)Config\TC_Root.props"
+          Condition="'$(SolutionDir)' != '' And Exists('$(SolutionDir)Config\TC_Root.props')" />
+  <Import Project="$(ProjectDir)..\Config\TC_Root.props"
+          Condition="'$(TC_ROOT)' == '' And Exists('$(ProjectDir)..\Config\TC_Root.props')" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="Shared">
@@ -102,12 +112,15 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;IPLIB=none;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(TC_ROOT)\include;$(TC_ROOT)\include_cpp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(TC_ROOT)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(TC_ROOT)\lib\*.lib;$(TC_ROOT)\lib\itk_main.obj;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -118,23 +131,29 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;IPLIB=none;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\Teamcenter_2312\tc\include;D:\Teamcenter_2312\tc\include_cpp</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TC_ROOT)\include;$(TC_ROOT)\include_cpp</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\Teamcenter_2312\tc\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>D:\Teamcenter_2312\tc\lib\*.lib;D:\Teamcenter_2312\tc\lib\itk_main.obj</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(TC_ROOT)\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>$(TC_ROOT)\lib\*.lib;$(TC_ROOT)\lib\itk_main.obj;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ConfigParser.hpp" />
+    <ClInclude Include="DBConnector.hpp" />
     <ClInclude Include="Header.hxx" />
+    <ClInclude Include="InputLoader.hpp" />
     <ClInclude Include="M_Logger.hpp" />
     <ClInclude Include="standard_defines.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ConfigParser.cpp" />
+    <ClCompile Include="DBConnector.cpp" />
+    <ClCompile Include="InputLoader.cpp" />
     <ClCompile Include="M_Logger.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>

@@ -1,7 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>-u=miguser -p=miguser -g=dba -input=D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\InputFileT.txt -output=D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\OutputFile.txt -log=D:\ITK_customization\ClassificationUtilitiesTC2312\ClassificationExtraction\Logs\Logs\</LocalDebuggerCommandArguments>
+    <!--
+      No arguments needed anymore: the exe discovers ..\..\Config\classification_utilities.cfg
+      automatically (exe runs from x64\Release) and takes credentials from [CREDENTIALS].
+      To debug with a specific config file, add:
+        -config=<full path to classification_utilities.cfg>
+      Legacy per-run overrides still work: -input= -output= -log= -u= -p= -g=
+    -->
+    <LocalDebuggerCommandArguments></LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

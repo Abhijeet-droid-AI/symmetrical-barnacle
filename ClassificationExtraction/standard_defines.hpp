@@ -89,22 +89,17 @@
 #define NON_WIN_SEPERATOR "//"
 #define LOG_EXT ".log"
 #define COMMA  "," 
-#define HEADER_STRING "\n"+"**************************************************"
-#define CONST_ITEM_ID_ATTR "item_id"
+#define HEADER_STRING "\n"+"**************************************************"#define CONST_ITEM_ID_ATTR "item_id"
 #define CONST_VALUE_ONE 1
 
 using namespace std;
 
-#define ITK(x)																												 \
-{																															 \
-    if ( (status = (x)) != ITK_ok )																							 \
-    {																														 \
-            char *error_str = NULL;																							 \
-            EMH_ask_error_text ( status, &error_str );																		 \
-            TC_write_syslog ( "ERROR: %d, ERROR MSG: %s. at Line: %d in File: %s\n", status, error_str, __LINE__, __FILE__ );\
-            MEM_free ( error_str );																							 \
-    }																														 \
-}
+/*
+  NOTE : the ITK(x) macro used to be defined here as well, which clashed with
+  the definition in Header.hxx (C4005 redefinition warning, and the two
+  versions used different status variable names). It now lives ONLY in
+  Header.hxx so every translation unit behaves identically.
+*/
 
 #define SAFE_MEM_FREE( a )  \
 if ( a != NULL )		\
@@ -136,4 +131,4 @@ failureLogger_->logError(status)
 //static char * stringToChar(string sName);
 
 
-#endif#pragma once
+#endif // STANDARD_DEFINES_H
