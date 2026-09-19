@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClassificationImport", "Cla
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClassificationExtraction", "ClassificationExtraction\ClassificationExtraction.vcxproj", "{44D54B16-31F5-4FC4-AADF-8A9C36AB05FB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClassificationValidation", "ClassificationValidation\ClassificationValidation.vcxproj", "{E567A5A6-F97A-49C9-8909-F6445260ADE3}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ClassificationDelete", "ClassificationDelete\ClassificationValidation.vcxproj", "{E567A5A6-F97A-49C9-8909-F6445260ADE3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Classification Utilities — Office Laptop Setup Guide (VS 2022, Copy‑Paste from GitHub)</title>
+<style>
+  :root{
+    --bg:#f6f8fa; --card:#ffffff; --ink:#1f2328; --muted:#57606a;
+    --accent:#0969da; --ok:#1a7f37; --warn:#9a6700; --bad:#cf222e;
+    --line:#d0d7de; --code:#f6f8fa; --chipbg:#ddf4ff; --chipink:#0969da;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  .wrap{max-width:1000px;margin:0 auto;padding:24px 20px 80px}
+  header.hero{background:linear-gradient(135deg,#0b3d6f,#0969da);color:#fff;border-radius:14px;padding:28px 30px;margin-bottom:26px}
+  header.hero h1{margin:0 0 8px;font-size:1.7rem}
+  header.hero p{margin:0;opacity:.92}
+  h2{font-size:1.35rem;margin:38px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line)}
+  h2 .stepnum{display:inline-block;background:var(--accent);color:#fff;border-radius:8px;padding:2px 10px;margin-right:10px;font-size:1rem;vertical-align:2px}
+  h3{margin:22px 0 8px;font-size:1.05rem}
+  p,li{font-size:.95rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin:14px 0}
+  .note{border-left:5px solid var(--accent);background:#ddf4ff;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .warn{border-left:5px solid var(--warn);background:#fff8c5;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .bad{border-left:5px solid var(--bad);background:#ffebe9;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .ok{border-left:5px solid var(--ok);background:#dafbe1;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  code,pre{font-family:Consolas,"Cascadia Mono",Menlo,monospace}
+  code{background:var(--code);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:.86em}
+  pre{background:#0d1117;color:#e6edf3;border-radius:10px;padding:14px 16px;overflow-x:auto;font-size:.85rem;line-height:1.5}
+  pre code{background:none;border:none;color:inherit;padding:0;font-size:1em}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.9rem;background:#fff}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#eff2f5}
+  tr:nth-child(even) td{background:#fbfcfd}
+  .chip{display:inline-block;background:var(--chipbg);color:var(--chipink);border-radius:20px;padding:1px 10px;font-size:.75rem;font-weight:600;white-space:nowrap}
+  .chip.req{background:#dafbe1;color:var(--ok)}
+  .chip.opt{background:#fff8c5;color:var(--warn)}
+  .chip.skip{background:#ffebe9;color:var(--bad)}
+  .chip.edit{background:#fbefff;color:#8250df}
+  details{background:var(--card);border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden}
+  details summary{cursor:pointer;padding:13px 18px;font-weight:600;background:#eff2f5;user-select:none}
+  details summary:hover{background:#e7ebef}
+  details[open] summary{border-bottom:1px solid var(--line)}
+  details .inner{padding:6px 18px 14px}
+  input[type=checkbox]{transform:scale(1.25);margin-right:8px;cursor:pointer;vertical-align:middle}
+  .kbd{display:inline-block;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:#fff;padding:0 6px;font-size:.8rem;font-family:Consolas,monospace}
+  .toc{columns:2;column-gap:34px}
+  .toc a{color:var(--accent);text-decoration:none;display:block;padding:2px 0;font-size:.93rem}
+  .toc a:hover{text-decoration:underline}
+  footer{margin-top:50px;color:var(--muted);font-size:.82rem;text-align:center}
+  .tree{font-family:Consolas,monospace;font-size:.85rem;background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 18px;overflow-x:auto;white-space:pre}
+  @media print{
+    body{background:#fff} .wrap{max-width:100%;padding:0}
+    details{break-inside:avoid} details:not([open]) .inner{display:block}
+    header.hero{background:#0969da !important;-webkit-print-color-adjust:exact}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Classification Utilities — Office Laptop Setup Guide</h1>
+  <p>Visual Studio 2022 &nbsp;•&nbsp; Teamcenter 2312 ITK &nbsp;•&nbsp; No download / no clone — everything is copied by hand from GitHub</p>
+</header>
+
+<nav class="card">
+  <strong>Contents</strong>
+  <div class="toc">
+    <a href="#s0">0 &nbsp;How this guide works (read first)</a>
+    <a href="#s1">1 &nbsp;Prerequisites checklist</a>
+    <a href="#s2">2 &nbsp;Create the folder skeleton</a>
+    <a href="#s3">3 &nbsp;Copy every file (per-folder checklist)</a>
+    <a href="#s4">4 &nbsp;Copy technique on GitHub (do it right)</a>
+    <a href="#s5">5 &nbsp;Edit the one config file</a>
+    <a href="#s6">6 &nbsp;Build in VS 2022</a>
+    <a href="#s7">7 &nbsp;Smoke tests</a>
+    <a href="#s8">8 &nbsp;Troubleshooting</a>
+    <a href="#s9">9 &nbsp;Final structure &amp; mental model</a>
+  </div>
+</nav>
+
+<!-- ============================================================ STEP 0 -->
+<h2 id="s0"><span class="stepnum">0</span>How this guide works (read first)</h2>
+<div class="card">
+<p>This project is a Visual Studio 2022 C++ solution with <strong>three console utilities</strong> that talk to Teamcenter through the ITK library:</p>
+<ul>
+  <li><strong>ClassificationExtraction</strong> — reads item IDs, extracts their classification (ICO) attributes into a pipe-delimited file.</li>
+  <li><strong>ClassificationImport</strong> — classifies items into ICS classes and writes classification attributes.</li>
+  <li><strong>ClassificationDelete</strong> (project file is named <em>ClassificationValidation</em>) — validates classification and writes failed rows to a rerun file.</li>
+</ul>
+<p>All machine-specific settings (Teamcenter path, credentials, file paths) live in <strong>one file</strong>: <code>Config\classification_utilities.cfg</code>. The C++ sources and project files contain <em>no</em> machine-specific paths — they use <code>$(TC_ROOT)</code>, which is resolved at build time. That is exactly why a pure copy-paste rebuild works.</p>
+</div>
+
+<div class="warn">
+<strong>The 5 rules of the copy-paste method</strong>
+<ol style="margin:8px 0 0 18px">
+  <li>On GitHub, open each file, click <strong>Raw</strong>, select all, copy — <strong>never</strong> copy from the normal GitHub view (it inserts line numbers and highlight markup).</li>
+  <li>Create each file in Visual Studio with the <strong>exact same name and folder</strong> as listed here (names matter — the solution file points at them).</li>
+  <li>Do <strong>not</strong> create <code>TC_Root.props</code> yourself — it is generated automatically by the build script.</li>
+  <li>Do not copy logs, <code>.exe</code>, <code>x64\</code> folders, <code>.bak</code> files or scratch text files — only the files in the checklists below.</li>
+  <li>Everything under <code>ClassificationImport\</code>, <code>ClassificationExtraction\</code> and <code>ClassificationDelete\</code> is identical between machines. Only <code>Config\classification_utilities.cfg</code> gets office-specific edits (Step 5).</li>
+</ol>
+</div>
+
+<!-- ============================================================ STEP 1 -->
+<h2 id="s1"><span class="stepnum">1</span>Prerequisites checklist</h2>
+<div class="card">
+<p>Verify every row <em>before</em> copying anything. If one fails, nothing later will work.</p>
+<table>
+  <tr><th style="width:34%">Requirement</th><th>How to verify on the office laptop</th></tr>
+  <tr><td>Visual Studio 2022 with the <strong>“Desktop development with C++”</strong> workload (any edition: Community / Professional / Enterprise)</td><td>Start Menu → VS 2022 → File → New → Project → the <em>“Empty Project (C++)”</em> template exists</td></tr>
+  <tr><td>MSBuild / <code>vcvarsall.bat</code> present</td><td>This file exists (adjust <code>&lt;Edition&gt;</code>):<br><code>C:\Program Files\Microsoft Visual Studio\2022\&lt;Edition&gt;\VC\Auxiliary\Build\vcvarsall.bat</code></td></tr>
+  <tr><td>Teamcenter 2312 with <strong>ITK / TC SDK</strong> headers &amp; libs installed</td><td>Folders <code>include\</code>, <code>include_cpp\</code>, <code>lib\</code> exist under the TC root, e.g.<br><code>D:\Teamcenter_2312\tc\include\tc\tc_startup.h</code> and <code>D:\Teamcenter_2312\tc\lib\itk_main.obj</code> exist</td></tr>
+  <tr><td>TC_DATA volume reachable</td><td><code>\\server\apps\TCDATA\tc_profilevars.bat</code> opens (network share path from your TC admin)</td></tr>
+  <tr><td>A TC test account (user / password / group)</td><td>You can log in to the Rich Client / Portal with it</td></tr>
+  <tr><td><span class="chip opt">only for DB modes</span> A 64‑bit ODBC DSN to the TC database</td><td>Start → “ODBC Data Sources (64‑bit)” → System DSN → Test Connection succeeds with a <strong>read-only</strong> DB account</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ STEP 2 -->
+<h2 id="s2"><span class="stepnum">2</span>Create the folder skeleton</h2>
+<div class="card">
+<p>On the office laptop create this structure. The root folder name/drive is free (this guide uses <code>D:\ITK_customization\ClassificationUtilities\</code> — if you pick another, use your path consistently in Step 5).</p>
+<div class="tree">D:\ITK_customization\ClassificationUtilities\
+│
+├── Config\                       ← create empty
+├── ClassificationImport\         ← create empty
+├── ClassificationExtraction\     ← create empty
+├── ClassificationDelete\         ← create empty   (folder name exact!)
+└── x64\                          ← created automatically at build time</div>
+<div class="warn" style="margin-bottom:0"><strong>Important:</strong> the third folder must be named exactly <code>ClassificationDelete</code>, but the project file that goes inside it must be named exactly <code>ClassificationValidation.vcxproj</code> (historical name kept for solution compatibility). The solution references <code>ClassificationDelete\ClassificationValidation.vcxproj</code>.</div>
+</div>
+
+<!-- ============================================================ STEP 3 -->
+<h2 id="s3"><span class="stepnum">3</span>Copy every file — per-folder checklist</h2>
+<p>Open the GitHub repository in the browser, navigate into each folder, and copy the files below one by one into the matching local folder (technique in Step 4). Tick the boxes as you go. Total: <strong>≈45 files</strong>, roughly 30–45 minutes of work.</p>
+
+<details open>
+<summary>📁 Root folder — 1 file</summary>
+<div class="inner">
+<table>
+  <tr><th style="width:30px"></th><th style="width:38%">File</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationUtilitiesTC13.sln</code></td><td><span class="chip req">required</span></td><td>Visual Studio solution, references all 3 projects by relative path. Copy content as-is (the name “TC13” is historical — harmless).</td></tr>
+  <tr><td></td><td><code>ClassificationUtilitiesTC13.slnLaunch.user</code></td><td><span class="chip skip">skip</span></td><td>Personal launch settings — not needed.</td></tr>
+</table>
+</div>
+</details>
+
+<details open>
+<summary>📁 Config\ — 8 files (the only ones you will ever edit)</summary>
+<div class="inner">
+<table>
+  <tr><th style="width:30px"></th><th style="width:38%">File</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><input type="checkbox"></td><td><code>classification_utilities.cfg</code></td><td><span class="chip req">required</span> <span class="chip edit">edit in Step 5</span></td><td>The ONE master config: TC paths, credentials, log dir, per-utility input/output, and <code>[RUN] FUNCTION</code>.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>_cfg.bat</code></td><td><span class="chip req">required</span></td><td>Batch helper all other bats use to read the config. Save as CRLF (see Step 4 note).</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Build_All.bat</code></td><td><span class="chip req">required</span></td><td>Builds the whole solution (or a single utility); <strong>generates <code>TC_Root.props</code></strong> from the config.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Build_Extraction.bat</code></td><td><span class="chip opt">optional</span></td><td>Single-utility build variant.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Run.bat</code></td><td><span class="chip req">required</span></td><td>Master dispatcher — reads <code>[RUN] FUNCTION</code> and runs the matching Run_*.bat.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Run_Extraction.bat</code></td><td><span class="chip req">required</span></td><td>Sets up TC env (<code>tc_profilevars.bat</code>), creates log dir, runs the exe with <code>-config=</code>.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Run_Import.bat</code></td><td><span class="chip req">required</span></td><td>Same for ClassificationImport.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Run_Delete.bat</code></td><td><span class="chip req">required</span></td><td>Same for ClassificationDelete.</td></tr>
+</table>
+<p style="margin:6px 0 0"><span class="chip skip">do NOT create</span> <code>TC_Root.props</code> — it is generated by <code>Build_All.bat</code> from <code>[ENVIRONMENT] TC_ROOT</code>.</p>
+</div>
+</details>
+
+<details open>
+<summary>📁 ClassificationExtraction\ — 14 files (+1 sample)</summary>
+<div class="inner">
+<table>
+  <tr><th style="width:30px"></th><th style="width:38%">File</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><input type="checkbox"></td><td><code>Source.cpp</code></td><td><span class="chip req">required</span></td><td>main() + ICS/ITEM/TCTYPE extraction logic.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Header.hxx</code></td><td><span class="chip req">required</span></td><td>Structs, ITK macro, declarations.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>standard_defines.hpp</code></td><td><span class="chip req">required</span></td><td>Shared macros.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>M_Logger.hpp</code> &nbsp;and&nbsp; <code>M_Logger.cpp</code></td><td><span class="chip req">required</span> ×2</td><td>Logging (config-driven log dir &amp; prefixes).</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ConfigParser.hpp</code> &nbsp;and&nbsp; <code>ConfigParser.cpp</code></td><td><span class="chip req">required</span> ×2</td><td>INI config reader.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>DBConnector.hpp</code> &nbsp;and&nbsp; <code>DBConnector.cpp</code></td><td><span class="chip req">required</span> ×2</td><td>Read-only ODBC wrapper (uses <code>odbc32.lib</code>).</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>InputLoader.hpp</code> &nbsp;and&nbsp; <code>InputLoader.cpp</code></td><td><span class="chip req">required</span> ×2</td><td>CSV / DB / CSV_DB ingestion.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationExtraction.vcxproj</code></td><td><span class="chip req">required</span></td><td>Project file — contains <code>$(TC_ROOT)</code> include/lib settings, C++17, <code>IPLIB=none</code>.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationExtraction.vcxproj.filters</code></td><td><span class="chip opt">optional</span></td><td>Solution-Explorer grouping only.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationExtraction.vcxproj.user</code></td><td><span class="chip opt">optional</span></td><td>Debug args (empty = config-driven).</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>InputFileT.txt</code></td><td><span class="chip opt">optional sample</span></td><td>Pipe-delimited sample input for the smoke test (Step 7). <code>[EXTRACTION] CSV_FILE</code> in the config points here.</td></tr>
+</table>
+<p style="margin:6px 0 0"><span class="chip skip">skip</span> <code>OutputFile.txt</code> (runtime output), <code>New Text Document.txt</code>, <code>x64\</code> folder.</p>
+</div>
+</details>
+
+<details open>
+<summary>📁 ClassificationImport\ — 14 files (+1 sample)</summary>
+<div class="inner">
+<table>
+  <tr><th style="width:30px"></th><th style="width:38%">File</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><input type="checkbox"></td><td><code>Source.cpp</code></td><td><span class="chip req">required</span></td><td>main() + ICS import logic.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Header.hpp</code></td><td><span class="chip req">required</span></td><td>Note: this project uses <code>.hpp</code> (Extraction/Delete use <code>.hxx</code>) — name it exactly like this.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>standard_defines.hpp</code></td><td><span class="chip req">required</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>M_Logger.hpp</code> &nbsp;and&nbsp; <code>M_Logger.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ConfigParser.hpp</code> &nbsp;and&nbsp; <code>ConfigParser.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>DBConnector.hpp</code> &nbsp;and&nbsp; <code>DBConnector.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>InputLoader.hpp</code> &nbsp;and&nbsp; <code>InputLoader.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationImport.vcxproj</code></td><td><span class="chip req">required</span></td><td>Project file.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationImport.vcxproj.filters</code></td><td><span class="chip opt">optional</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationImport.vcxproj.user</code></td><td><span class="chip opt">optional</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ImportInputBlade.txt</code></td><td><span class="chip opt">optional sample</span></td><td>Sample import input (<code>~##</code> delimited); <code>[IMPORT] CSV_FILE</code> points here.</td></tr>
+</table>
+<p style="margin:6px 0 0"><span class="chip skip">skip</span> <code>logfile*.log</code>, <code>Outp.txt</code>, <code>test.csv</code>, <code>UpdatedImportinput.txt</code>, <code>ImportFANnonUAT.txt</code>, <code>Import_FAN_nonUAt.txt</code>, <code>ClassificationImport.bat</code>, <code>classificationimport_PROD.bat</code>, <code>New Text Document.txt</code>, <code>*.bak</code>, <code>x64\</code> folder.</p>
+</div>
+</details>
+
+<details open>
+<summary>📁 ClassificationDelete\ — 13 files (+1 sample)</summary>
+<div class="inner">
+<table>
+  <tr><th style="width:30px"></th><th style="width:38%">File</th><th>Status</th><th>Notes</th></tr>
+  <tr><td><input type="checkbox"></td><td><code>Source.cpp</code></td><td><span class="chip req">required</span></td><td>main() + validation/delete logic.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>Header.hxx</code></td><td><span class="chip req">required</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>standard_defines.hpp</code></td><td><span class="chip req">required</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>M_Logger.hpp</code> &nbsp;and&nbsp; <code>M_Logger.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ConfigParser.hpp</code> &nbsp;and&nbsp; <code>ConfigParser.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>DBConnector.hpp</code> &nbsp;and&nbsp; <code>DBConnector.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>InputLoader.hpp</code> &nbsp;and&nbsp; <code>InputLoader.cpp</code></td><td><span class="chip req">required</span> ×2</td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationValidation.vcxproj</code></td><td><span class="chip req">required</span></td><td><strong>Must keep this exact file name</strong> inside the <code>ClassificationDelete\</code> folder — the solution points here. The project’s display name is “ClassificationDelete”.</td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ClassificationValidation.vcxproj.filters</code></td><td><span class="chip opt">optional</span></td><td></td></tr>
+  <tr><td><input type="checkbox"></td><td><code>ValidationInputBlade.txt</code></td><td><span class="chip opt">optional sample</span></td><td>Sample validation input (<code>|</code> delimited); <code>[DELETE] CSV_FILE</code> points here.</td></tr>
+</table>
+<p style="margin:6px 0 0"><span class="chip skip">skip</span> <code>x64\</code> folder and any log/output files.</p>
+</div>
+</details>
+
+<!-- ============================================================ STEP 4 -->
+<h2 id="s4"><span class="stepnum">4</span>Copy technique on GitHub — do it right</h2>
+<div class="card">
+<h3>4.1 &nbsp;The correct way to copy a file</h3>
+<ol>
+  <li>In the browser, open the GitHub repository and click into the folder, then the file (e.g. <code>Config/_cfg.bat</code>).</li>
+  <li>On the file page click the <strong>Raw</strong> button (top-right of the file content box). You now see the pure text — no line numbers, no colors.</li>
+  <li>Click inside the text, <span class="kbd">Ctrl</span>+<span class="kbd">A</span> then <span class="kbd">Ctrl</span>+<span class="kbd">C</span>.</li>
+  <li>In Visual Studio 2022: <strong>File → New → File</strong> (or right-click the project/folder in Solution Explorer → Add → New Item), choose the right type, paste with <span class="kbd">Ctrl</span>+<span class="kbd">V</span>, and save with the <strong>exact file name</strong> from the checklist into the <strong>exact folder</strong>.</li>
+</ol>
+<div class="bad" style="margin-bottom:0"><strong>Never copy from the normal GitHub file view.</strong> The rendered view includes line numbers and syntax-highlight markup that will corrupt the file — especially fatal for <code>.vcxproj</code>, <code>.sln</code> and <code>.bat</code> files.</div>
+
+<h3>4.2 &nbsp;Creating files in Visual Studio</h3>
+<ul>
+  <li>Easiest reliable route: <strong>Add → New Item</strong> on the correct project, pick the matching template (<code>C++ File (.cpp)</code>, <code>Header File (.h)</code> then rename the extension, or <code>Text File</code> for everything else), paste, save-as with the exact name.</li>
+  <li>For the <code>.sln</code>, <code>.vcxproj</code>, <code>.filters</code>, <code>.user</code>, <code>.cfg</code> and <code>.bat</code> files, it is often simpler to create them in <strong>Windows Explorer → right-click → New → Text Document</strong>, rename to the exact name (enable “File name extensions” in Explorer first so you don’t end up with <code>file.bat.txt</code>!), then paste and edit in VS/Notepad.</li>
+  <li><code>.vcxproj</code> and <code>.filters</code> are <strong>XML</strong> — they must be byte-faithful. Paste raw content only; after saving, open each in a browser tab as a sanity check (a browser shows XML errors if something got mangled).</li>
+</ul>
+
+<h3>4.3 &nbsp;Encoding &amp; line endings</h3>
+<ul>
+  <li><strong><code>.bat</code> files:</strong> save with <strong>CRLF (Windows)</strong> line endings and ANSI/UTF-8 <em>without</em> special characters. In VS: File → <code>&lt;name&gt;.bat</code> → Save As → arrow next to Save → <em>Save with Encoding…</em> → choose <em>Western European (Windows) – Codepage 1252</em> or <em>UTF-8 without signature</em>, line endings <em>Windows (CRLF)</em>. If a bat misbehaves (weird “is not recognized” errors), re-saving it from <strong>Notepad → Save As → “ANSI”</strong> fixes encoding issues instantly.</li>
+  <li><strong><code>.cfg</code> file:</strong> UTF-8 is fine — <code>_cfg.bat</code> strips a BOM if present. CRLF recommended.</li>
+  <li><strong><code>.cpp / .hpp / .hxx</code> files:</strong> VS defaults are fine (UTF‑8 with or without BOM both compile).</li>
+  <li><strong><code>.vcxproj / .sln</code> files:</strong> the original files start with a UTF‑8 BOM (<code>EF BB BF</code>) — keep the first line untouched and don’t retype anything; pure paste + save is fine.</li>
+</ul>
+
+<h3>4.4 &nbsp;Order of operations</h3>
+<p>Recommended: copy <code>Config\</code> files first, then the three project folders, then open the <code>.sln</code> — Visual Studio then finds every project on first open and you can immediately see anything missing (a project with missing files shows them absent from Solution Explorer; the <code>.vcxproj</code> lists all expected files, so compare).</p>
+</div>
+
+<!-- ============================================================ STEP 5 -->
+<h2 id="s5"><span class="stepnum">5</span>Edit the one config file (office values)</h2>
+<div class="card">
+<p>Open <code>Config\classification_utilities.cfg</code> in any editor. You only need to touch the values below — every path/key name stays as-is. Rules: <code>;</code> or <code>#</code> starts a comment; keys are case-insensitive; trailing <code>\</code> on paths is optional.</p>
+
+<table>
+  <tr><th>Section / Key</th><th>Set it to (office)</th></tr>
+  <tr><td><code>[ENVIRONMENT] TC_ROOT</code></td><td>Office Teamcenter root, e.g. <code>D:\Teamcenter_2312\tc</code> — the folder that contains <code>include\</code>, <code>include_cpp\</code>, <code>lib\</code></td></tr>
+  <tr><td><code>[ENVIRONMENT] TC_DATA</code></td><td>Office TC data volume, e.g. <code>\\office-tcserver\apps\TCDATA</code></td></tr>
+  <tr><td><code>[BUILD] VCVARSALL</code></td><td>Office VS 2022 path — <strong>the shipped file says <code>...\2022\Community\...</code>; change the edition</strong> to Professional/Enterprise if that’s what’s installed:<br><code>C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Auxiliary\Build\vcvarsall.bat</code></td></tr>
+  <tr><td><code>[CREDENTIALS] TC_USER / TC_PASS / TC_GROUP</code></td><td>Office TC test account (e.g. group <code>dba</code>). ⚠ Password is stored in plain text — protect this file.</td></tr>
+  <tr><td><code>[LOGS] LOG_DIR</code></td><td>Any office-writable folder, e.g. <code>D:\ITK_customization\ClassificationUtilities\Logs\</code> (created automatically if missing)</td></tr>
+  <tr><td><code>[EXTRACTION] CSV_FILE</code>, <code>OUTPUT_FILE</code></td><td>Office paths for the extraction input/output (defaults point at the solution folders — fix the drive letter if yours differs)</td></tr>
+  <tr><td><code>[IMPORT] CSV_FILE</code> &nbsp;/&nbsp; <code>[DELETE] CSV_FILE</code></td><td>Same idea — office paths to the import / delete input files</td></tr>
+  <tr><td><code>[EXTRACTION|IMPORT|DELETE] DB_CONN_STR</code></td><td>Only for DB / CSV_DB modes: <code>DSN=TCDB;UID=readonly;PWD=...</code> matching the 64-bit DSN you created in Step 1</td></tr>
+  <tr><td><code>[RUN] FUNCTION</code></td><td>Which utility <code>Run.bat</code> executes: <code>EXTRACTION</code>, <code>IMPORT</code> or <code>DELETE</code></td></tr>
+</table>
+
+<p>Then do these one-time machine settings:</p>
+<ol>
+  <li><strong>Set TC_ROOT for the IDE (optional but recommended):</strong> open a Command Prompt and run<br>
+  <code>setx TC_ROOT "D:\Teamcenter_2312\tc"</code> &nbsp;then <strong>restart VS</strong>. Not needed if you always build via <code>Build_All.bat</code>.</li>
+  <li><strong>ODB DSN (only for DB/CSV_DB modes):</strong> “ODBC Data Sources (64-bit)” → System DSN → Add → your TC DB driver → name it e.g. <code>TCDB</code> → test with a read-only account.</li>
+</ol>
+
+<div class="note"><strong>How <code>$(TC_ROOT)</code> resolves:</strong> the <code>.vcxproj</code> files import <code>Config\TC_Root.props</code> if it exists (generated by <code>Build_All.bat</code> from <code>[ENVIRONMENT] TC_ROOT</code>); otherwise MSBuild falls back to the <code>TC_ROOT</code> environment variable. No Teamcenter path is ever hardcoded in the projects — that’s why the pasted project files work unchanged.</div>
+</div>
+
+<!-- ============================================================ STEP 6 -->
+<h2 id="s6"><span class="stepnum">6</span>Build in Visual Studio 2022</h2>
+<div class="card">
+
+<h3>Option A — build script (recommended for the first build)</h3>
+<ol>
+  <li>Double-click <code>Config\Build_All.bat</code> (no VS needed). It reads TC_ROOT + VCVARSALL from the config, <strong>generates <code>Config\TC_Root.props</code></strong>, runs <code>vcvarsall.bat x64</code> + MSBuild, and leaves <code>x64\Release\*.exe</code>.<br>
+  Variants: <code>Build_All.bat EXTRACTION|IMPORT|DELETE</code> builds one utility; add <code>clean</code> as 2nd argument to clean first.</li>
+</ol>
+
+<h3>Option B — from the VS 2022 IDE</h3>
+<ol>
+  <li>Double-click <code>ClassificationUtilitiesTC13.sln</code>.</li>
+  <li>If VS shows the <strong>Retarget Projects</strong> dialog (platform/toolset), click <strong>OK</strong> — the projects are toolset-agnostic and target v143 on VS 2022.</li>
+  <li>Solution Explorer should show 3 projects. Set the toolbar to <strong>Release</strong> + <strong>x64</strong>.</li>
+  <li>Build → Build Solution (<span class="kbd">Ctrl</span>+<span class="kbd">Shift</span>+<span class="kbd">B</span>).</li>
+</ol>
+
+<div class="warn"><strong>IDE-only gotcha:</strong> if <code>TC_Root.props</code> was created (or <code>TC_ROOT</code> set via <code>setx</code>) <em>after</em> VS was already open, close and reopen the solution once so MSBuild re-evaluates the props import. Symptom otherwise: <code>cannot open include file 'tc/tc_startup.h'</code> or <code>itk_main.obj</code> not found.</div>
+
+<h3>What a good first build looks like</h3>
+<ul>
+  <li>Compiler warnings like C4100/C4189 from legacy-style code are normal.</li>
+  <li>The link step chews through <code>$(TC_ROOT)\lib\*.lib</code> — slow link is normal.</li>
+  <li>Output: <code>x64\Release\ClassificationExtraction.exe</code>, <code>ClassificationImport.exe</code>, <code>ClassificationDelete.exe</code>.</li>
+</ul>
+</div>
+
+<!-- ============================================================ STEP 7 -->
+<h2 id="s7"><span class="stepnum">7</span>Smoke tests</h2>
+<div class="card">
+<p>Run each utility with <code>INPUT_MODE = CSV</code> first (no DB dependency), then the other modes if needed.</p>
+<table>
+  <tr><th style="width:16%">Test</th><th>Do</th><th>Expect</th></tr>
+  <tr><td><strong>T1 — usage</strong></td><td><code>cd /d D:\ITK_customization\ClassificationUtilities\x64\Release</code><br><code>ClassificationExtraction.exe -h</code></td><td>Usage text, exit code 1 (no TC login needed)</td></tr>
+  <tr><td><strong>T2 — Extraction, CSV</strong></td><td>Config: <code>[EXTRACTION] INPUT_MODE=CSV</code>, CSV_FILE = the sample <code>InputFileT.txt</code>. Double-click <code>Config\Run_Extraction.bat</code> (or <code>Run.bat</code> with <code>FUNCTION=EXTRACTION</code>)</td><td>Console prints resolved config path → TC_ROOT/TC_DATA → “Login Successful” → items processed → “finished with exit code 0”. <code>LOG_DIR</code> gets <code>SuccessEPM_&lt;timestamp&gt;.log</code>; <code>OUTPUT_FILE</code> has header + one row per classified object</td></tr>
+  <tr><td><strong>T3 — Extraction, DB</strong></td><td><code>INPUT_MODE=DB</code> with a <code>DB_QUERY</code> returning item_id (col 1) and optionally item_revision_id (col 2)</td><td>Log shows “Query returned N row(s)” (needs the 64-bit DSN from Step 5)</td></tr>
+  <tr><td><strong>T4 — Extraction, CSV_DB</strong></td><td><code>INPUT_MODE=CSV_DB</code>; CSV lists ids; <code>CSV_DB_QUERY</code> contains <code>%ITEM_ID%</code> (and optional <code>%ITEM_REV%</code>)</td><td>Log lists every substituted query, e.g. <code>... WHERE item_id = '1111-5YY0197'</code>; missing-CSV-row fallback controlled by <code>CSV_DB_FALLBACK_TO_CSV</code></td></tr>
+  <tr><td><strong>T5 — Import</strong></td><td>Config: <code>[IMPORT] INPUT_MODE=CSV</code>, CSV_FILE = <code>ImportInputBlade.txt</code>. Double-click <code>Config\Run_Import.bat</code> (or set <code>[RUN] FUNCTION=IMPORT</code> + <code>Run.bat</code>)</td><td>Same success pattern; items end up classified in TC</td></tr>
+  <tr><td><strong>T6 — Delete/Validation</strong></td><td>Config: <code>[DELETE] INPUT_MODE=CSV</code>, CSV_FILE = <code>ValidationInputBlade.txt</code>. Double-click <code>Config\Run_Delete.bat</code> (or <code>FUNCTION=DELETE</code> + <code>Run.bat</code>)</td><td>Failed rows written to a <code>Rerun_Classification_*.log</code> file for re-run</td></tr>
+</table>
+<p><strong>Exit codes (all utilities):</strong> <code>0</code> ok · <code>1</code> usage · <code>2</code> config problem · <code>3</code> TC login failed · <code>4</code> input loading failed · <code>5</code> output write failed · <code>6</code> nothing classified found.</p>
+</div>
+
+<!-- ============================================================ STEP 8 -->
+<h2 id="s8"><span class="stepnum">8</span>Troubleshooting</h2>
+<div class="card">
+<table>
+  <tr><th style="width:38%">Symptom</th><th> Likely cause / fix</th></tr>
+  <tr><td>Solution opens but a project shows “incompatible” / unloadable</td><td>A pasted <code>.vcxproj</code> got corrupted (usually by copying from the non-Raw GitHub view). Re-copy that file with the Raw method, or remove the project from the solution and re-add it (<em>Add → Existing Project</em>).</td></tr>
+  <tr><td><code>ERROR : config file not found</code> (bat)</td><td><code>Config\</code> must sit at the solution root next to the <code>.sln</code>.</td></tr>
+  <tr><td><code>configuration file not found</code> from the exe when run from VS</td><td>The IDE working dir is <code>x64\Release</code>; the exe searches <code>..\..\Config\</code>. Run via the bat files, or pass <code>-config=&lt;full path&gt;</code>.</td></tr>
+  <tr><td>Build: <code>tc_startup.h</code> / <code>itk_main.obj</code> not found</td><td><code>TC_ROOT</code> wrong in the config, or VS opened before <code>TC_Root.props</code> existed → run <code>Build_All.bat</code> once, then close &amp; reopen the solution.</td></tr>
+  <tr><td>Build: toolset <code>v143</code> not found</td><td>VS 2022 “Desktop development with C++” workload missing (Step 1).</td></tr>
+  <tr><td>A <code>.bat</code> prints garbage / “not recognized”</td><td>Encoding or LF line endings. Re-save the bat from Notepad → Save As → <em>ANSI</em>, CRLF.</td></tr>
+  <tr><td>Config values not picked up by the bats</td><td>The <code>.cfg</code> was mangled while pasting. Use the Raw view; keep <code>KEY = VALUE</code> on one line; <code>;</code>/<code>#</code> only at line start.</td></tr>
+  <tr><td>Login failed (exit 3)</td><td>Wrong <code>[CREDENTIALS]</code>, or TC_DATA/<code>tc_profilevars.bat</code> points to another TC environment.</td></tr>
+  <tr><td><code>Failed to open Input file</code> (exit 4)</td><td><code>CSV_FILE</code> path wrong for the office machine — check the log for the exact resolved path.</td></tr>
+  <tr><td>DB: <code>SQLSTATE=IM002</code></td><td>DSN missing or created as 32-bit. Create a <strong>64-bit</strong> DSN (Step 5).</td></tr>
+  <tr><td>DB: <code>SQLSTATE=28000</code></td><td>DSN credentials wrong / account locked.</td></tr>
+  <tr><td>Output file empty/missing (exit 6)</td><td>No classified objects among the inputs — check <code>FailEPM_*.log</code> for “Niether Item Nor Revision is classified”.</td></tr>
+  <tr><td>Output file not writable (exit 5)</td><td>File open in Excel, or no write permission on the folder.</td></tr>
+  <tr><td>Items “not found” though they exist</td><td>Item belongs to another org — the TC login user lacks access; or the rev id text doesn’t match exactly.</td></tr>
+</table>
+</div>
+
+<!-- ============================================================ STEP 9 -->
+<h2 id="s9"><span class="stepnum">9</span>Final structure &amp; mental model</h2>
+<div class="card">
+<p>When every checkbox above is ticked and the build passed, the office laptop looks like this:</p>
+<div class="tree">D:\ITK_customization\ClassificationUtilities\
+├── ClassificationUtilitiesTC13.sln
+├── Config\
+│   ├── classification_utilities.cfg   ← ALL settings (machine-specific — the only file you maintain)
+│   ├── _cfg.bat
+│   ├── Build_All.bat / Build_Extraction.bat
+│   ├── Run.bat / Run_Extraction.bat / Run_Import.bat / Run_Delete.bat
+│   └── TC_Root.props                  ← generated at build time (do not edit, do not hand-create)
+├── ClassificationImport\              ← sources + project files (machine-INDEPENDENT)
+├── ClassificationExtraction\
+├── ClassificationDelete\
+└── x64\Release\                       ← ClassificationExtraction.exe / ClassificationImport.exe / ClassificationDelete.exe
+
+Runtime artifacts
+├── Logs\  SuccessEPM_*.log, FailEPM_*.log, Rerun_Classification_*.log
+└── per-utility OutputFile.txt</div>
+<p><strong>Mental model:</strong> machines differ <em>only</em> in <code>classification_utilities.cfg</code>. Everything else you pasted is identical between any two machines — so future code updates are just re-pasting the changed <code>.cpp/.hpp</code> files from GitHub, with zero reconfiguration.</p>
+</div>
+
+<footer>Classification Utilities · Office Laptop Setup Guide · copy-paste edition · generated September 2026</footer>
+</div>
+</body>
+</html>
