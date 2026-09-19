@@ -1,0 +1,2 @@
+item_id|item_revision_id|object_type|CLASS_ID|CLASS_NAME|Coded Airfoils|Customer|Project|Project data|Ring|Root diameter|Source|Source specification|Tip diameter|Type||||
+8280659||LT4_JECAD|ICM0102023201|CFM Blade|Yes|HYUNDAI|Hyundai FN|Calettamento pala: +3°|Yes|150|Modification|8280578|455|Axial||||
