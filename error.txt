@@ -1,0 +1,171 @@
+D:\ClassificationUtilities\Config>Build_All.bat
+============================================================
+ Building Classification Utilities : ALL
+   TC_ROOT       : D:\Teamcenter_2312\tc
+   Visual Studio : C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat
+   Platform      : x64  /  Release
+============================================================
+Generated D:\ClassificationUtilities\Config\TC_Root.props with TC_ROOT=D:\Teamcenter_2312\tc
+**********************************************************************
+** Visual Studio 2022 Developer Command Prompt v17.13.6
+** Copyright (c) 2022 Microsoft Corporation
+**********************************************************************
+[vcvarsall.bat] Environment initialized for: 'x64'
+MSBuild version 17.13.19+0d9f5a35a for .NET Framework
+Build started 21-09-2026 11:56:18.
+
+     1>Project "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" on node 1 (Build target(s)).
+     1>ValidateSolutionConfiguration:
+         Building solution configuration "Release|x64".
+     1>Project "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (1) is building "D:\ClassificationUtilities\ClassificationDelete\Classification
+       Validation.vcxproj" (2) on node 2 (default targets).
+     2>PrepareForBuild:
+         Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output fo
+         r more details.
+     1>Project "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (1) is building "D:\ClassificationUtilities\ClassificationExtraction\Classifica
+       tionExtraction.vcxproj" (3) on node 3 (default targets).
+     3>PrepareForBuild:
+         Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output fo
+         r more details.
+     2>InitializeBuildStatus:
+         Touching "x64\Release\Classifi.a7c3d9e2.tlog\unsuccessfulbuild".
+     3>InitializeBuildStatus:
+         Touching "x64\Release\Classifi.44d54b16.tlog\unsuccessfulbuild".
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\CL.exe /c /ID:\Teamcenter_2312\tc\include /ID:\T
+         eamcenter_2312\tc\include_cpp /Zi /nologo /W3 /WX- /diagnostics:column /sdl /O2 /Oi /GL /D NDEBUG /D _CONSOLE /D IPLIB=none /D _CRT_SECURE_NO_WARN
+         INGS /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /permissive- /Fo"x64\Release\\" /Fd"x64\Release
+         \vc143.pdb" /external:W3 /Gd /TP /FC /errorReport:queue InputLoader.cpp Source.cpp
+     1>Project "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (1) is building "D:\ClassificationUtilities\ClassificationImport\Classification
+       Import.vcxproj" (4) on node 1 (default targets).
+     4>PrepareForBuild:
+         Structured output is enabled. The formatting of compiler diagnostics will reflect the error hierarchy. See https://aka.ms/cpp/structured-output fo
+         r more details.
+       InitializeBuildStatus:
+         Touching "x64\Release\Classifi.ed9b4260.tlog\unsuccessfulbuild".
+     3>ClCompile:
+         InputLoader.cpp
+     3>D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,st
+       d::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail' [D:\ClassificationUtilities\ClassificationExtraction\Classificatio
+       nExtraction.vcxproj]
+         (compiling source file 'InputLoader.cpp')
+             C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\xstring(522,7):
+             see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+
+     2>ClCompile:
+         C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\CL.exe /c /ID:\Teamcenter_2312\tc\include /ID:\T
+         eamcenter_2312\tc\include_cpp /Zi /nologo /W3 /WX- /diagnostics:column /sdl /O2 /Oi /GL /D NDEBUG /D _CONSOLE /D IPLIB=none /D _CRT_SECURE_NO_WARN
+         INGS /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /std:c++17 /permissive- /Fo"x64\Release\\" /Fd"
+         x64\Release\vc143.pdb" /external:W3 /Gd /TP /FC /errorReport:queue DBConnector.cpp
+     3>ClCompile:
+         Source.cpp
+     4>ClCompile:
+         All outputs are up-to-date.
+       Link:
+         C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\bin\HostX64\x64\link.exe /ERRORREPORT:QUEUE /OUT:"D:\Classificat
+         ionUtilities\x64\Release\ClassificationImport.exe" /NOLOGO /LIBPATH:D:\Teamcenter_2312\tc\lib "D:\Teamcenter_2312\tc\lib\*.lib" D:\Teamcenter_2312
+         \tc\lib\itk_main.obj odbc32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.l
+         ib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"D:\ClassificationUtilities\x64
+         \Release\ClassificationImport.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /LTCGOUT:"x64\Release\ClassificationImport.iobj" /TLBID:
+         1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\ClassificationUtilities\x64\Release\ClassificationImport.lib" /MACHINE:X64 x64\Release\M_Logger.obj
+         x64\Release\Source.obj
+         x64\Release\ConfigParser.obj
+         x64\Release\DBConnector.obj
+         x64\Release\InputLoader.obj
+     2>ClCompile:
+         DBConnector.cpp
+     4>Link:
+            Creating library D:\ClassificationUtilities\x64\Release\ClassificationImport.lib and object D:\ClassificationUtilities\x64\Release\Classificati
+         onImport.exp
+     4>Source.obj : error LNK2001: unresolved external symbol "int __cdecl getObject(char const *,char const *,unsigned int *)" (?getObject@@YAHPEBD0PEAI@Z
+       ) [D:\ClassificationUtilities\ClassificationImport\ClassificationImport.vcxproj]
+     4>D:\ClassificationUtilities\x64\Release\ClassificationImport.exe : fatal error LNK1120: 1 unresolved externals [D:\ClassificationUtilities\Classifica
+       tionImport\ClassificationImport.vcxproj]
+     3>D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,st
+       d::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail' [D:\ClassificationUtilities\ClassificationExtraction\Classificatio
+       nExtraction.vcxproj]
+         (compiling source file 'Source.cpp')
+             C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.43.34808\include\xstring(522,7):
+             see declaration of 'std::basic_string<char,std::char_traits<char>,std::allocator<char>>'
+
+     4>Done Building Project "D:\ClassificationUtilities\ClassificationImport\ClassificationImport.vcxproj" (default targets) -- FAILED.
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(438,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(439,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(450,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(451,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(452,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(453,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(463,13): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(465,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(467,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\Cl
+       assificationExtraction\ClassificationExtraction.vcxproj]
+     3>Done Building Project "D:\ClassificationUtilities\ClassificationExtraction\ClassificationExtraction.vcxproj" (default targets) -- FAILED.
+     2>D:\Teamcenter_2312\tc\include\ae\datasettype.h(55,1): error C1189: #error:  EXPORT is incompatibly defined; use AE_EXPORT and re-arrange includes [D
+       :\ClassificationUtilities\ClassificationDelete\ClassificationValidation.vcxproj]
+         (compiling source file 'DBConnector.cpp')
+
+     2>Done Building Project "D:\ClassificationUtilities\ClassificationDelete\ClassificationValidation.vcxproj" (default targets) -- FAILED.
+     1>Done Building Project "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+       "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (Build target) (1) ->
+       "D:\ClassificationUtilities\ClassificationExtraction\ClassificationExtraction.vcxproj" (default target) (3) ->
+       (ClCompile target) ->
+         D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,
+       std::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail' [D:\ClassificationUtilities\ClassificationExtraction\Classificat
+       ionExtraction.vcxproj]
+         D:\Teamcenter_2312\tc\include_cpp\base_utils\IFail.hxx(120,17): warning C4251: 'IFail::m_message': 'std::basic_string<char,std::char_traits<char>,
+       std::allocator<char>>' needs to have dll-interface to be used by clients of 'IFail' [D:\ClassificationUtilities\ClassificationExtraction\Classificat
+       ionExtraction.vcxproj]
+
+
+       "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (Build target) (1) ->
+       "D:\ClassificationUtilities\ClassificationImport\ClassificationImport.vcxproj" (default target) (4) ->
+       (Link target) ->
+         Source.obj : error LNK2001: unresolved external symbol "int __cdecl getObject(char const *,char const *,unsigned int *)" (?getObject@@YAHPEBD0PEAI
+       @Z) [D:\ClassificationUtilities\ClassificationImport\ClassificationImport.vcxproj]
+         D:\ClassificationUtilities\x64\Release\ClassificationImport.exe : fatal error LNK1120: 1 unresolved externals [D:\ClassificationUtilities\Classifi
+       cationImport\ClassificationImport.vcxproj]
+
+
+       "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (Build target) (1) ->
+       "D:\ClassificationUtilities\ClassificationExtraction\ClassificationExtraction.vcxproj" (default target) (3) ->
+       (ClCompile target) ->
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(438,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(439,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(450,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(451,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(452,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(453,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(463,13): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(465,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+         D:\ClassificationUtilities\ClassificationExtraction\Source.cpp(467,17): error C2065: 'iStatus': undeclared identifier [D:\ClassificationUtilities\
+       ClassificationExtraction\ClassificationExtraction.vcxproj]
+
+
+       "D:\ClassificationUtilities\ClassificationUtilitiesTC13.sln" (Build target) (1) ->
+       "D:\ClassificationUtilities\ClassificationDelete\ClassificationValidation.vcxproj" (default target) (2) ->
+         D:\Teamcenter_2312\tc\include\ae\datasettype.h(55,1): error C1189: #error:  EXPORT is incompatibly defined; use AE_EXPORT and re-arrange includes
+       [D:\ClassificationUtilities\ClassificationDelete\ClassificationValidation.vcxproj]
+
+    2 Warning(s)
+    12 Error(s)
+
+Time Elapsed 00:00:02.34
