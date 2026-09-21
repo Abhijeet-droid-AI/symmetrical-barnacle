@@ -8,9 +8,10 @@
 //  Classifies Teamcenter objects into the ICS classes named in the input and
 //  sets the classification attributes. The input arrives through the ingestion
 //  layer (InputLoader: CSV / DB / CSV_DB) configured in the master config file
-//  (Config\classification_utilities.cfg).
+//  (Config\classification_utilities.cfg); the Teamcenter login credentials
+//  come from the separate user-owned file (Config\tc_config.txt).
 //
-//      ClassificationImport.exe [-config=<cfg file>] [-h]
+//      ClassificationImport.exe [-config=<cfg file>] [-tcconfig=<tc cfg>] [-h]
 //                               [-u=<user> -p=<pwd> -g=<group>]   (optional overrides)
 //                               [-f=<input file> -log=<dir>]      (legacy overrides)
 //
@@ -47,6 +48,7 @@ int ITK_user_main(int argc, char* argv[])
 	int iUnUsed = 0;
 
 	string sConfigFile;
+	string sTcConfigFile;
 	string sUserId, sPwd, sGroup;
 	string sLogFileDir;
 	string sLegacyInputFile;
@@ -71,6 +73,10 @@ int ITK_user_main(int argc, char* argv[])
 		if( strncmp( argv[ i ], "-config=", 8 ) == 0 )
 		{
 			sConfigFile.assign( argv[ i ] + 8 );
+		}
+		else if( strncmp( argv[ i ], "-tcconfig=", 10 ) == 0 )
+		{
+			sTcConfigFile.assign( argv[ i ] + 10 );
 		}
 		else if( strncmp( argv[ i ], "-u=", 3 ) == 0 )
 		{
@@ -105,6 +111,27 @@ int ITK_user_main(int argc, char* argv[])
 		return EXIT_CONFIG;
 	}
 
+	/* ------------------------------------------------------------------
+	   2b. Teamcenter credentials file (tc_config.txt)
+	       Holds [CREDENTIALS] (login). [ENVIRONMENT] TC_ROOT/TC_DATA in the
+	       master cfg is read by the Run_*.bat wrappers, not by the exe.
+	       Missing file is OK - credentials may come from -u=/-p=/-g= overrides.
+	   ------------------------------------------------------------------ */
+	string sTcConfigPath = sTcConfigFile;
+	if( sTcConfigPath.empty() && !sConfigFile.empty() )
+	{
+		/* default: tc_config.txt next to the -config= file */
+		size_t nLastSlash = sConfigFile.find_last_of( "\\/" );
+		if( nLastSlash != string::npos )
+			sTcConfigPath = sConfigFile.substr( 0, nLastSlash + 1 ) + "tc_config.txt";
+	}
+
+	ConfigParser oTcCfg;
+	if( !sTcConfigPath.empty() && oTcCfg.load( sTcConfigPath ) )
+	{
+		std::cout << "Using Teamcenter environment file : " << sTcConfigPath << std::endl;
+	}
+
 	RowIngestionSettings_t oIngest;
 	oIngest.inputMode       = oCfg.getString( "IMPORT", "INPUT_MODE", "CSV" );
 	oIngest.csvFile         = oCfg.getString( "IMPORT", "CSV_FILE", "" );
@@ -116,9 +143,9 @@ int ITK_user_main(int argc, char* argv[])
 	oIngest.csvDbQuery      = oCfg.getString( "IMPORT", "CSV_DB_QUERY", "" );
 
 	/* credentials + logging : config first, CLI overrides win */
-	if( sUserId.empty() )  sUserId = oCfg.getString( "CREDENTIALS", "TC_USER", "" );
-	if( sPwd.empty() )     sPwd    = oCfg.getString( "CREDENTIALS", "TC_PASS", "" );
-	if( sGroup.empty() )   sGroup  = oCfg.getString( "CREDENTIALS", "TC_GROUP", "" );
+	if( sUserId.empty() )  sUserId = oTcCfg.getString( "CREDENTIALS", "TC_USER", "" );
+	if( sPwd.empty() )     sPwd    = oTcCfg.getString( "CREDENTIALS", "TC_PASS", "" );
+	if( sGroup.empty() )   sGroup  = oTcCfg.getString( "CREDENTIALS", "TC_GROUP", "" );
 	if( sLogFileDir.empty() ) sLogFileDir = oCfg.getString( "LOGS", "LOG_DIR", ".\\Logs\\" );
 
 	/* legacy override of the CSV file still supported */
@@ -129,7 +156,7 @@ int ITK_user_main(int argc, char* argv[])
 
 	if( sUserId.empty() || sPwd.empty() || sGroup.empty() )
 	{
-		std::cout << "ERROR: Teamcenter credentials missing (set [CREDENTIALS] in the config file)" << std::endl;
+		std::cout << "ERROR: Teamcenter credentials missing (set [CREDENTIALS] in tc_config.txt)" << std::endl;
 		displayUsage();
 		return EXIT_USAGE;
 	}
@@ -506,12 +533,14 @@ void displayUsage(void)
 
 	std::cout << "\n Usage : " << endl;
 
-	std::cout << "ClassificationImport.exe  [-config=<configuration file>] [-u=<userid> -p=<passwd> -g=<group>]" << endl;
+	std::cout << "ClassificationImport.exe  [-config=<configuration file>] [-tcconfig=<tc_config.txt path>] [-u=<userid> -p=<passwd> -g=<group>]" << endl;
 	std::cout << "                          [-f=<input file>] [-log=<log directory>]" << endl;
 	std::cout << "                          [-h | help]  Displays this usage information" << endl << endl;
 	std::cout << " Without arguments the utility reads Config\\classification_utilities.cfg" << endl;
 	std::cout << " (auto-discovered two levels up from the exe, or next to the exe)." << endl;
 	std::cout << " The input mode (CSV / DB / CSV_DB) is taken from the [IMPORT] section." << endl;
+	std::cout << " The Teamcenter login is taken from [CREDENTIALS] of Config\\tc_config.txt" << endl;
+	std::cout << " (-tcconfig= overrides its location)." << endl;
 
 	std::cout << "\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 }
@@ -825,4 +854,47 @@ tag_t getItemOrRevToValidate(tag_t tObj, string ObjRevId)
 	sWrite.str("");*/
 
 	return obj_rev;
+}
+
+/*
+  FIX (LNK2001 / LNK1120): getObject() was declared at the top of this file and
+  called in the classification loop, but never implemented in this project -
+  the definition only existed in ClassificationDelete\Source.cpp. This is the
+  same implementation (uses Import's "logger" instead of Delete's "loggers").
+  Finds an object of the given item_id + object_type in Teamcenter.
+*/
+int getObject(const char* itemId, const char* pObjType, tag_t* tObj)
+{
+	int nObjs = 0;
+	int iStatus = ITK_ok;
+	tag_t* tObjs = NULL;
+	char* cObjType = NULL;
+
+	const char
+		* names[2]  = { "item_id" , "object_type" },
+		* values[2] = { itemId , pObjType };
+
+	ITK( ITEM_find_items_by_key_attributes( 2, names, values, &nObjs, &tObjs ) );
+
+	if ( nObjs > 0 )
+	{
+		for ( int ii = 0; ii < nObjs; ii++ )
+		{
+			ITK( AOM_ask_value_string( tObjs[ii], "object_type", &cObjType ) );
+
+			if ( tc_strcmp( pObjType, cObjType ) == 0 )
+			{
+				*tObj = tObjs[ii];
+			}
+			SAFE_MEM_FREE( cObjType );
+		}
+	}
+	else
+	{
+		logger.writefaillog( "Object -> " + (string)itemId + " not found in Teamcenter" );
+	}
+
+	SAFE_MEM_FREE( tObjs );
+
+	return 0;
 }
