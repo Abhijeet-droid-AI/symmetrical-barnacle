@@ -6,9 +6,15 @@ ClassificationExtraction utility**. It assumes nothing exists on the office
 machine yet. (If you already have a working copy of the solution there, follow
 `OFFICE_PORTING_CHECKLIST.md` instead — this document is the from-zero path.)
 
-Everything that differs between your home laptop and the office machine lives in
-ONE file: `Config\classification_utilities.cfg`. You will edit only that file in
-Step 5 — no source changes, no project property changes.
+Two config files control everything:
+
+- `Config\classification_utilities.cfg` — ALL developer/library settings:
+  build ([BUILD]), Teamcenter environment ([ENVIRONMENT] TC_ROOT/TC_DATA),
+  logs and the function sections. Only [BUILD] is edited per machine (Step 5).
+- `Config\tc_config.txt` — the Teamcenter LOGIN ONLY (TC_USER/TC_PASS/TC_GROUP).
+  This is the ONLY file a USER ever edits after you deliver the exes.
+
+No source changes, no project property changes.
 
 ---
 
@@ -63,11 +69,15 @@ ClassificationUtilitiesTC13.sln            (copy as-is; name is historical, harm
 ### 2.2 Into `Config\`:
 
 ```
-classification_utilities.cfg       the ONE config file (edit in Step 5)
-_cfg.bat                           batch helper that reads the config
-Build_Extraction.bat               builds the exe from the config
-Run_Extraction.bat                 runs the exe from the config
+classification_utilities.cfg       ALL developer settings ([BUILD] edited in Step 5)
+tc_config.txt                      TC login - the ONLY file a USER edits
+_cfg.bat                           batch helper that reads the config files
+Build_All.bat                      builds the solution (ALL / EXTRACTION / IMPORT / DELETE)
+Build_Extraction.bat               compat wrapper -> Build_All.bat EXTRACTION
 Run.bat                            master dispatcher ([RUN] FUNCTION)
+Run_Extraction.bat                 runs the extraction exe
+Run_Import.bat                     runs the import exe
+Run_Delete.bat                     runs the delete exe
 ```
 
 (Do NOT copy `TC_Root.props` — it gets generated automatically by the build bat.
@@ -135,24 +145,21 @@ ClassificationExtraction\InputFileT.txt    your existing pipe-delimited sample i
 
 ---
 
-## Step 4 — Understand the one file you will maintain: the config
+## Step 4 — Understand the two config files
 
-`Config\classification_utilities.cfg` sections and what the office values should be:
+`Config\classification_utilities.cfg` (developer-owned — users NEVER edit it):
 
 ```ini
-[ENVIRONMENT]
-TC_ROOT  = <office TC install, e.g. D:\Teamcenter_2312\tc>
-TC_DATA  = <office TC data volume, e.g. \\office-tcserver\apps\TCDATA>
+[ENVIRONMENT]                        ; Teamcenter library settings (developer)
+TC_ROOT  = <TC install used to build, e.g. D:\Teamcenter_2312\tc>
+TC_DATA  = <TC data volume, e.g. \\office-tcserver\apps\TCDATA>
 
-[BUILD]
+[BUILD]                              ; build settings (developer)
 VCVARSALL     = <office VS2022 vcvarsall.bat full path>
 PLATFORM      = x64
 CONFIGURATION = Release
 
-[CREDENTIALS]
-TC_USER  = <office TC test user>
-TC_PASS  = <password — plaintext warning applies>
-TC_GROUP = <group, usually dba>
+; NO [CREDENTIALS] here any more - the TC login lives in tc_config.txt
 
 [LOGS]
 LOG_DIR         = D:\ITK_customization\ClassificationUtilities\Logs\
@@ -174,6 +181,15 @@ OUTPUT_FILE   = ...\OutputFile.txt
 FUNCTION = EXTRACTION
 ```
 
+`Config\tc_config.txt` (user-owned — the ONLY file a user edits):
+
+```ini
+[CREDENTIALS]
+TC_USER  = <office TC test user>
+TC_PASS  = <password — plaintext warning applies>
+TC_GROUP = <group, usually dba>
+```
+
 Editing rules: `;` or `#` starts a comment; paths may omit the trailing `\`;
 keys are case-insensitive; `INPUT_MODE` picks the ingestion path.
 
@@ -181,15 +197,20 @@ keys are case-insensitive; `INPUT_MODE` picks the ingestion path.
 
 ## Step 5 — Configure the office machine specifics
 
-5.1 Edit `[ENVIRONMENT]` → TC_ROOT, TC_DATA (office values).
+5.1 Edit `[ENVIRONMENT]` → TC_ROOT, TC_DATA only if the office Teamcenter
+    paths differ from the values already in the file (developer-owned;
+    a USER never touches this section).
 5.2 Edit `[BUILD]` → VCVARSALL (office VS2022 path from Step 0.2).
-5.3 (Optional, for building inside the VS IDE) set a machine-wide variable once:
+5.3 Edit `Config\tc_config.txt` → office TC test account
+    (TC_USER / TC_PASS / TC_GROUP). On a user's machine this is the
+    ONLY file they edit.
+5.4 (Optional, for building inside the VS IDE) set a machine-wide variable once:
     `setx TC_ROOT "D:\Teamcenter_2312\tc"` then reopen VS. Not needed for bat builds.
-5.4 (Only for DB/CSV_DB) create the 64-bit ODBC DSN:
+5.5 (Only for DB/CSV_DB) create the 64-bit ODBC DSN:
     "ODBC Data Sources (64-bit)" → System DSN → Add → your TC DB driver
     (Oracle/MSSQL) → name it e.g. `TCDB` → test connection with a **read-only**
     DB account. Put `DSN=TCDB;UID=...;PWD=...` into `DB_CONN_STR`.
-5.5 Create the log directory if it doesn't exist (the bat also auto-creates it):
+5.6 Create the log directory if it doesn't exist (the bat also auto-creates it):
     `mkdir D:\ITK_customization\ClassificationUtilities\Logs`
 
 ---
@@ -238,7 +259,7 @@ Expected: usage text, exit code 1.
 - Check `LOG_DIR` for `SuccessEPM_<timestamp>.log`; first lines print config file
   + input mode. Open OUTPUT_FILE — header + one row per classified object.
 
-**T3 — DB mode** (requires Step 5.4 DSN)
+**T3 — DB mode** (requires Step 5.5 DSN)
 - `INPUT_MODE = DB`, set `DB_QUERY` to return item_id (col 1) and optionally
   item_revision_id (col 2). Re-run. Log shows "Query returned N row(s)".
 
@@ -266,7 +287,7 @@ Expected: usage text, exit code 1.
 | Build: `MSB... toolset v143 not found` | VS2022 C++ workload missing (Step 0.1). |
 | Login failed (exit 3) | Wrong credentials, or TC_DATA/tc_profilevars points to another environment. |
 | `Failed to open Input file` (exit 4) | CSV_FILE path wrong for office; check the log for the exact resolved path. |
-| DB: `SQLSTATE=IM002` | DSN doesn't exist (or created as 32-bit). Create **64-bit** DSN (Step 5.4). |
+| DB: `SQLSTATE=IM002` | DSN doesn't exist (or created as 32-bit). Create **64-bit** DSN (Step 5.5). |
 | DB: `SQLSTATE=28000` | DSN credentials wrong / read-only account locked. |
 | Output file empty/missing (exit 6) | No classified objects among inputs — check FailEPM_*.log for "Niether Item Nor Revision is classified". |
 | Output file not writable (exit 5) | File open in Excel; or no write permission on folder. |
@@ -281,7 +302,8 @@ Office laptop
 D:\ITK_customization\ClassificationUtilities\
 ├── ClassificationUtilitiesTC13.sln
 ├── Config\
-│   ├── classification_utilities.cfg   ← ALL settings (machine-specific)
+│   ├── classification_utilities.cfg   ← ALL developer settings (build, TC env, functions)
+│   ├── tc_config.txt                  ← TC login only (the file a USER edits)
 │   ├── _cfg.bat / Build_*.bat / Run_*.bat / Run.bat
 │   └── TC_Root.props                  ← generated, do not edit
 ├── ClassificationExtraction\          ← machine-INDEPENDENT sources
@@ -291,9 +313,11 @@ Runtime artifacts
 └── OutputFile.txt
 ```
 
-Machines differ **only** in `classification_utilities.cfg`. Sources and project
-files are identical between home and office — that's what makes the USB copy in
-Step 2 a one-time operation.
+Machines differ **only** in `classification_utilities.cfg` (developer settings,
+[BUILD]/[ENVIRONMENT]) and `tc_config.txt` (the user's TC login). Sources and
+project files are identical between home and office — that's what makes the USB
+copy in Step 2 a one-time operation. When you deliver to a user, they edit ONLY
+`tc_config.txt`.
 
 ---
 
@@ -303,6 +327,7 @@ When you migrate ClassificationImport and ClassificationValidation with the same
 pattern, nothing in this setup changes:
 
 1. Copy their migrated sources into their folders (same recipe as Extraction).
-2. Add `Run_Import.bat` / `Run_Validation.bat` next to `Run_Extraction.bat`.
-3. Fill their existing `[IMPORT]` / `[VALIDATION]` config sections.
+2. Add `Run_Import.bat` / `Run_Delete.bat` next to `Run_Extraction.bat`
+   (already present in this project).
+3. Fill their existing `[IMPORT]` / `[DELETE]` config sections.
 4. Switch utilities by editing `[RUN] FUNCTION` — or run their `Run_*.bat` directly.

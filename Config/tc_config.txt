@@ -1,0 +1,36 @@
+; ============================================================================= 
+;  TEAMCENTER CREDENTIALS - tc_config.txt
+; =============================================================================
+;  THIS IS THE ONLY FILE THE USER NEEDS TO EDIT.
+;
+;  It holds the Teamcenter login used by ALL three utilities
+;  (ClassificationExtraction / ClassificationImport / ClassificationDelete).
+;  The exes read this file when they start (or the Run_*.bat wrappers read it
+;  and pass the values to the exe on the command line).
+;
+;  WHERE DO THE OTHER TEAMCENTER SETTINGS LIVE?
+;    TC_ROOT / TC_DATA (where Teamcenter is installed) are developer/library
+;    settings. They stay in Config\classification_utilities.cfg under
+;    [ENVIRONMENT] and must NOT be edited by the user.
+;
+;    classification_utilities.cfg  = ALL developer settings   - do not edit.
+;    tc_config.txt                 = Teamcenter login only    - EDIT THIS.
+;
+;  HOW TO USE
+;    1. Fill in your Teamcenter user, password and group below.
+;    2. Save the file.
+;    3. Double-click Config\Run.bat (or the Run_*.bat for the utility).
+;
+;  Rules (same syntax as classification_utilities.cfg):
+;    - Sections are in [BRACKETS], keys are KEY = VALUE
+;    - ';' or '#' at start of a line = comment
+;
+;  WARNING: the password is stored in clear text - protect this file with
+;  NTFS permissions / share permissions.
+; =============================================================================
+
+[CREDENTIALS]
+; Your Teamcenter login
+TC_USER  = miguser
+TC_PASS  = miguser
+TC_GROUP = dba

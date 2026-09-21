@@ -1,15 +1,26 @@
 @echo off
 rem =============================================================================
 rem  _cfg.bat - helper used by all Run_*.bat / Build_*.bat files.
-rem  Reads a value from the master config file:
-rem      call "%~dp0_cfg.bat" SECTION KEY RETVAR
+rem  Reads a value from a master config file:
+rem      call "%~dp0_cfg.bat" SECTION KEY RETVAR [CFGFILE]
 rem  Sets RETVAR to the value of KEY inside [SECTION].
+rem
+rem  The 4th argument CFGFILE is OPTIONAL and selects which config file is
+rem  read:
+rem      - omitted            -> classification_utilities.cfg (function config)
+rem      - full path supplied -> that file, e.g. tc_config.txt for the
+rem                              Teamcenter login ([CREDENTIALS])
 rem  Handles: spaces around '=' and '[', CRLF/LF files, UTF-8 BOM,
 rem           full-line ';' or '#' comments, empty values.
 rem =============================================================================
 
 set "CFGVAL="
 set "CFG_FILE=%~dp0classification_utilities.cfg"
+
+rem optional 4th argument: explicit config file path
+if not "%~4"=="" (
+    set "CFG_FILE=%~4"
+)
 
 if not exist "%CFG_FILE%" (
     echo ERROR : config file not found : %CFG_FILE% 1>&2

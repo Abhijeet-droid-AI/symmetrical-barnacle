@@ -4,10 +4,13 @@ rem ============================================================================
 rem  Build_All.bat - builds one utility, or the whole solution.
 rem
 rem  Reads everything from Config\classification_utilities.cfg:
-rem    [ENVIRONMENT] TC_ROOT       - Teamcenter install (include/lib paths)
 rem    [BUILD]       VCVARSALL     - path to your Visual Studio vcvarsall.bat
 rem    [BUILD]       PLATFORM      - x64
 rem    [BUILD]       CONFIGURATION - Release
+rem    [ENVIRONMENT] TC_ROOT       - Teamcenter install (include/lib paths)
+rem
+rem  (The user-owned file tc_config.txt holds ONLY the Teamcenter login and is
+rem   not needed for building.)
 rem
 rem  Usage:
 rem      Build_All.bat                -> builds the WHOLE solution (all 3)
@@ -109,7 +112,7 @@ echo BUILD OK.
 exit /b 0
 
 :err_cfg
-echo ERROR : could not read [ENVIRONMENT] TC_ROOT / [BUILD] VCVARSALL
+echo ERROR : could not read [BUILD] VCVARSALL or [ENVIRONMENT] TC_ROOT
 echo         from %CFILE%
 goto :err_end
 
