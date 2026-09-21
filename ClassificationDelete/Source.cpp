@@ -7,9 +7,11 @@
 //  -----------------------------------------------------------------------------
 //  Validates the classification attributes of Teamcenter objects against the
 //  values delivered by the ingestion layer (InputLoader: CSV / DB / CSV_DB)
-//  configured in the master config file (Config\classification_utilities.cfg).
+//  configured in the master config file (Config\classification_utilities.cfg);
+//  the Teamcenter login credentials come from the separate user-owned file
+//  (Config\tc_config.txt).
 //
-//      ClassificationDelete.exe [-config=<cfg file>] [-h]
+//      ClassificationDelete.exe [-config=<cfg file>] [-tcconfig=<tc cfg>] [-h]
 //                               [-u=<user> -p=<pwd> -g=<group>]       (optional overrides)
 //                               [-file=<input file> -log=<dir>]       (legacy overrides)
 //
@@ -159,6 +161,7 @@ int ITK_user_main(int argc, char* argv[])
 	time_t start = std::time(nullptr);
 
 	string sConfigFile;
+	string sTcConfigFile;
 	string sUserId, sPwd, sGroup;
 	string sLogFileDir;
 	string sLegacyInputFile;
@@ -183,6 +186,10 @@ int ITK_user_main(int argc, char* argv[])
 		if (strncmp(argv[i], "-config=", 8) == 0)
 		{
 			sConfigFile.assign(argv[i] + 8);
+		}
+		else if (strncmp(argv[i], "-tcconfig=", 10) == 0)
+		{
+			sTcConfigFile.assign(argv[i] + 10);
 		}
 		else if (strncmp(argv[i], "-u=", 3) == 0)
 		{
@@ -218,6 +225,27 @@ int ITK_user_main(int argc, char* argv[])
 		return EXIT_CONFIG;
 	}
 
+	/* ------------------------------------------------------------------
+	   2b. Teamcenter credentials file (tc_config.txt)
+	       Holds [CREDENTIALS] (login). [ENVIRONMENT] TC_ROOT/TC_DATA in the
+	       master cfg is read by the Run_*.bat wrappers, not by the exe.
+	       Missing file is OK - credentials may come from -u=/-p=/-g= overrides.
+	   ------------------------------------------------------------------ */
+	string sTcConfigPath = sTcConfigFile;
+	if (sTcConfigPath.empty() && !sConfigFile.empty())
+	{
+		/* default: tc_config.txt next to the -config= file */
+		size_t nLastSlash = sConfigFile.find_last_of("\\/");
+		if (nLastSlash != string::npos)
+			sTcConfigPath = sConfigFile.substr(0, nLastSlash + 1) + "tc_config.txt";
+	}
+
+	ConfigParser oTcCfg;
+	if (!sTcConfigPath.empty() && oTcCfg.load(sTcConfigPath))
+	{
+		std::cout << "Using Teamcenter environment file : " << sTcConfigPath << std::endl;
+	}
+
 	RowIngestionSettings_t oIngest;
 	oIngest.inputMode        = oCfg.getString("DELETE", "INPUT_MODE", "CSV");
 	oIngest.csvFile          = oCfg.getString("DELETE", "CSV_FILE", "");
@@ -229,9 +257,9 @@ int ITK_user_main(int argc, char* argv[])
 	oIngest.csvDbQuery       = oCfg.getString("DELETE", "CSV_DB_QUERY", "");
 
 	/* credentials + logging : config first, CLI overrides win */
-	if (sUserId.empty())      sUserId      = oCfg.getString("CREDENTIALS", "TC_USER", "");
-	if (sPwd.empty())         sPwd         = oCfg.getString("CREDENTIALS", "TC_PASS", "");
-	if (sGroup.empty())       sGroup       = oCfg.getString("CREDENTIALS", "TC_GROUP", "");
+	if (sUserId.empty())      sUserId      = oTcCfg.getString("CREDENTIALS", "TC_USER", "");
+	if (sPwd.empty())         sPwd         = oTcCfg.getString("CREDENTIALS", "TC_PASS", "");
+	if (sGroup.empty())       sGroup       = oTcCfg.getString("CREDENTIALS", "TC_GROUP", "");
 	if (sLogFileDir.empty())  sLogFileDir  = oCfg.getDirectory("LOGS", "LOG_DIR", ".\\Logs\\");
 
 	/* legacy override of the input file still supported */
@@ -242,7 +270,7 @@ int ITK_user_main(int argc, char* argv[])
 
 	if (sUserId.empty() || sPwd.empty() || sGroup.empty())
 	{
-		std::cout << "ERROR: Teamcenter credentials missing (set [CREDENTIALS] in the config file)" << std::endl;
+		std::cout << "ERROR: Teamcenter credentials missing (set [CREDENTIALS] in tc_config.txt)" << std::endl;
 		displayUsage();
 		return EXIT_USAGE;
 	}
@@ -577,13 +605,15 @@ void displayUsage(void)
 
 	cout << "\n -----------------------------------------------------------------------------------------------------------" << endl;
 
-	cout << "ClassificationDelete.exe  [-config=<configuration file>] [-u=<userid> -p=<passwd> -g=<group>]" << endl;
+	cout << "ClassificationDelete.exe  [-config=<configuration file>] [-tcconfig=<tc_config.txt path>] [-u=<userid> -p=<passwd> -g=<group>]" << endl;
 	cout << "                          [-file=<input file>] [-log=<log directory>]" << endl;
 	cout << "                          [-h | help]  Displays this usage information" << endl << endl;
 
 	cout << " Without arguments the utility reads Config\\classification_utilities.cfg" << endl;
 	cout << " (auto-discovered two levels up from the exe, or next to the exe)." << endl;
 	cout << " The input mode (CSV / DB / CSV_DB) is taken from the [DELETE] section." << endl;
+	cout << " The Teamcenter login is taken from [CREDENTIALS] of Config\\tc_config.txt" << endl;
+	cout << " (-tcconfig= overrides its location)." << endl;
 
 	cout << "Input file Header" << endl << endl;
 

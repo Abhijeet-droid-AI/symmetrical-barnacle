@@ -39,6 +39,22 @@
 #include <direct.h>
 #include <windows.h>
 
+/*
+  FIX (C1189 "EXPORT is incompatibly defined; use AE_EXPORT and re-arrange
+  includes"): when DBConnector.cpp compiles, its include chain is
+  DBConnector.hpp -> this file -> ... -> M_Logger.hpp -> Header.hxx, and
+  ae/datasettype.h only arrived at the very END (via Header.hxx) - after the
+  TC headers below had already (transitively) defined EXPORT, so
+  datasettype.h's own #error check fired.
+
+  Including the AE headers FIRST, before every other Teamcenter header, is
+  the arrangement the TC error message itself recommends ("re-arrange
+  includes") and mirrors the proven-good order already used in Header.hxx.
+*/
+#include <ae/ae.h>
+#include <ae/datasettype.h>
+#include <ae/dataset.h>
+
 // Teamcenter / ITK
 #include <tcinit/tcinit.h>
 #include <tc/tc_startup.h>
