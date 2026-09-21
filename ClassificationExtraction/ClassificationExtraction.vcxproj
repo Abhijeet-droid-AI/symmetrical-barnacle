@@ -48,17 +48,17 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <!--
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />    <!--
     ============================================================================
     SINGLE-SOURCE TC PATHS :
-    Build_Extraction.bat / Run_Extraction.bat read TC_ROOT from
-    Config\classification_utilities.cfg and generate Config\TC_Root.props.
+    Build_All.bat reads TC_ROOT from Config\classification_utilities.cfg
+    ([ENVIRONMENT]) and generates Config\TC_Root.props.
     When this file exists it defines $(TC_ROOT) - no Teamcenter path is
     hardcoded in the project file anymore. If it does not exist, set the
     TC_ROOT environment variable before starting Visual Studio.
+    (Run_*.bat read the TC login from Config\tc_config.txt - not used here.)
     ============================================================================
-  -->
+    -->
   <Import Project="$(SolutionDir)Config\TC_Root.props"
           Condition="'$(SolutionDir)' != '' And Exists('$(SolutionDir)Config\TC_Root.props')" />
   <Import Project="$(ProjectDir)..\Config\TC_Root.props"

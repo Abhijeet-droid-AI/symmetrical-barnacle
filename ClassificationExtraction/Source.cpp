@@ -9,10 +9,17 @@
 //  ingestion layer (InputLoader: CSV / DB / CSV_DB) and writes them into a
 //  pipe delimited output file.
 //
-//  All paths, credentials, log locations and the ingestion mode come from the
-//  single master configuration file (Config\classification_utilities.cfg):
+//  All paths, credentials, log locations and the ingestion mode come from
+//  the configuration files (Config\):
 //
-//      ClassificationExtraction.exe [-config=<cfg file>] [-h]
+//      classification_utilities.cfg : ALL library + function settings
+//                                   ([ENVIRONMENT] TC_ROOT / TC_DATA,
+//                                   [EXTRACTION], [LOGS]) - developer-owned.
+//      tc_config.txt                : Teamcenter login only ([CREDENTIALS])
+//                                   - the ONLY file the user edits.
+//
+//      ClassificationExtraction.exe [-config=<cfg file>] [-tcconfig=<tc cfg>]
+//                                   [-h]
 //                                   [-u=<user> -p=<pwd> -g=<group>]   (optional overrides)
 //                                   [-input=<file> -output=<file> -log=<dir>]  (legacy overrides)
 //
@@ -23,6 +30,7 @@ set <string> setAttributeNames;
 set <string> setAttributevalues;
 
 static string sConfigFilePath = "";
+static string sTcConfigFilePath = "";
 
 // -----------------------------------------------------------------------------
 //  findConfigFile : resolves the master config file.
@@ -73,6 +81,66 @@ static bool findConfigFile( const string& inExplicitPath, string& outConfigPath 
 }
 
 // -----------------------------------------------------------------------------
+//  findTcConfigFile : resolves the Teamcenter credentials file
+//                     (tc_config.txt, holds [CREDENTIALS]).
+//                     1) explicit -tcconfig= argument
+//                     2) next to the -config= file (Config\ folder)
+//                     3) <exe dir>\..\..\Config\tc_config.txt
+//                        (default solution layout:  x64\Release\<exe>)
+//                     4) <exe dir>\Config\tc_config.txt
+//                     5) .\Config\tc_config.txt  (current dir)
+// -----------------------------------------------------------------------------
+static bool findTcConfigFile( const string& inExplicitPath, string& outTcConfigPath )
+{
+    const string sConfigName = "tc_config.txt";
+
+    vector< string > vecCandidates;
+
+    if ( !inExplicitPath.empty() )
+        vecCandidates.push_back( inExplicitPath );
+
+    /* next to the main config file */
+    if ( !sConfigFilePath.empty() )
+    {
+        size_t nLastSlash = sConfigFilePath.find_last_of( "\\/" );
+        if ( nLastSlash != string::npos )
+            vecCandidates.push_back( sConfigFilePath.substr( 0, nLastSlash + 1 ) + sConfigName );
+        else
+            vecCandidates.push_back( sConfigName );
+    }
+
+    char cpExePath[ _MAX_PATH ] = { 0 };
+    if ( GetModuleFileNameA( NULL, cpExePath, _MAX_PATH ) > 0 )
+    {
+        string sExeDir  = cpExePath;
+        size_t nLastSlash = sExeDir.find_last_of( "\\/" );
+        if ( nLastSlash != string::npos )
+            sExeDir = sExeDir.substr( 0, nLastSlash + 1 );
+        else
+            sExeDir = "";
+
+        vecCandidates.push_back( sExeDir + "..\\..\\Config\\" + sConfigName );
+        vecCandidates.push_back( sExeDir + "Config\\" + sConfigName );
+    }
+
+    vecCandidates.push_back( "Config\\" + sConfigName );
+    vecCandidates.push_back( sConfigName );
+
+    for ( size_t inx = 0; inx < vecCandidates.size(); inx++ )
+    {
+        DWORD nAttr = GetFileAttributesA( vecCandidates[inx].c_str() );
+        if ( nAttr != INVALID_FILE_ATTRIBUTES )
+        {
+            outTcConfigPath = vecCandidates[inx];
+            return true;
+        }
+    }
+
+    outTcConfigPath = vecCandidates.empty() ? sConfigName : vecCandidates[0];
+    return false;
+}
+
+// -----------------------------------------------------------------------------
 //  resolveFileArgument : legacy -input= / -output= overrides beat the config
 // -----------------------------------------------------------------------------
 static string resolveFileArgument( char* cpCliValue, const ConfigParser& oCfg,
@@ -111,6 +179,7 @@ int ITK_user_main( int argc, char** argv )
     char* cpOutputFile = ITK_ask_cli_argument( "-output=" );   /* legacy override */
     char* cpLogFile    = ITK_ask_cli_argument( "-log=" );      /* legacy override */
     char* cpConfigArg  = ITK_ask_cli_argument( "-config=" );
+    char* cpTcConfigArg = ITK_ask_cli_argument( "-tcconfig=" );
 
     /* ------------------------------------------------------------------ */
     /* 2. configuration file                                               */
@@ -131,18 +200,39 @@ int ITK_user_main( int argc, char** argv )
 
     cout << "Using configuration file : " << sConfigFilePath << endl;
 
-    /* credentials : command line wins over config file */
+    /* ------------------------------------------------------------------ */
+    /* 2b. Teamcenter environment configuration (credentials)              */
+    /* ------------------------------------------------------------------- */
+    if ( !findTcConfigFile( cpTcConfigArg == NULL ? "" : cpTcConfigArg, sTcConfigFilePath ) )
+    {
+        cout << "ERROR : Teamcenter environment file not found : " << sTcConfigFilePath << endl;
+        cout << "        Create Config\\tc_config.txt and fill in [CREDENTIALS]" << endl;
+        cout << "        (see the header of that file)." << endl;
+        displayUsage();
+        return 2;
+    }
+
+    ConfigParser oTcCfg;
+    if ( !oTcCfg.load( sTcConfigFilePath ) )
+    {
+        cout << "ERROR : cannot read Teamcenter environment file : " << sTcConfigFilePath << endl;
+        return 2;
+    }
+
+    cout << "Using Teamcenter environment file : " << sTcConfigFilePath << endl;
+
+    /* credentials : command line wins over config files */
     string sUser = ( cpUserId != NULL && strlen( cpUserId ) > 0 )
-                   ? string( cpUserId ) : oCfg.getString( "CREDENTIALS", "TC_USER" );
+                   ? string( cpUserId ) : oTcCfg.getString( "CREDENTIALS", "TC_USER" );
     string sPwd  = ( cpPwd != NULL && strlen( cpPwd ) > 0 )
-                   ? string( cpPwd ) : oCfg.getString( "CREDENTIALS", "TC_PASS" );
+                   ? string( cpPwd ) : oTcCfg.getString( "CREDENTIALS", "TC_PASS" );
     string sGrp  = ( cpGrp != NULL && strlen( cpGrp ) > 0 )
-                   ? string( cpGrp ) : oCfg.getString( "CREDENTIALS", "TC_GROUP" );
+                   ? string( cpGrp ) : oTcCfg.getString( "CREDENTIALS", "TC_GROUP" );
 
     if ( sUser.empty() || sPwd.empty() || sGrp.empty() )
     {
         cout << "ERROR : Teamcenter credentials missing. Provide them in [CREDENTIALS] "
-             << "of the config file or via -u= -p= -g=" << endl;
+             << "of tc_config.txt or via -u= -p= -g=" << endl;
         displayUsage();
         return 2;
     }
@@ -400,6 +490,12 @@ bool writeIntoFile( map< tag_t, map< string, icoAttrValues_t > > mapClassifiedOb
                     const string& sOutputFile )
 {
     ofstream fpOutputFile;
+
+    /* FIX (C2065 'iStatus' undeclared): the ITK() macro defined in Header.hxx
+       expands to "iStatus = (x)" - this function used ITK() but never declared
+       iStatus, unlike every other function in this file. */
+    int iStatus = ITK_ok;
+
     fpOutputFile.open( sOutputFile.c_str() );
 
     TC_write_syslog( "ENTERED INTO %s\n", __FUNCTION__ );
@@ -553,11 +649,15 @@ void displayUsage( void )
     cout << " that are delivered by the configured input mode (CSV / DB / CSV_DB)." << endl;
     cout << "\n -----------------------------------------------------------------------------------------------------------" << endl;
     cout << "ClassificationExtraction.exe -config=<config file path>" << endl;
+    cout << "                             [-tcconfig=<tc_config.txt path>]" << endl;
     cout << "                             [-u=<userid> -p=<passwd> -g=<group>]" << endl;
     cout << "             [-input=<input file path> -output=<out file path> -log=<log Directory>]" << endl << endl;
-    cout << "[-config=] Master configuration file (default : ..\\..\\Config\\classification_utilities.cfg)" << endl;
+    cout << "[-config=]   Function configuration file (default : ..\\..\\Config\\classification_utilities.cfg)" << endl;
+    cout << "[-tcconfig=] Teamcenter credentials file (default : tc_config.txt next to the" << endl;
+    cout << "             -config= file, or ..\\..\\Config\\tc_config.txt); holds [CREDENTIALS]" << endl;
     cout << "[-h]       Displays this usage information" << endl << endl;
     cout << "All other settings (input mode, paths, queries, log directory) come from the" << endl;
-    cout << "[EXTRACTION] and [LOGS] sections of the configuration file." << endl;
+    cout << "[EXTRACTION] and [LOGS] sections of the configuration file; the Teamcenter" << endl;
+    cout << "login comes from the [CREDENTIALS] section of tc_config.txt." << endl;
     cout << "\n +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
 }
